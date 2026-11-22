@@ -609,9 +609,10 @@ def build_files(inp):
     f[".github/workflows/build-apk.yml"] = WORKFLOW.encode()
     return f
 
+API = ""
 async def gh(method, path, token, body=None):
-    r = await pyfetch("https://api.github.com" + path, method=method,
-        headers={"Authorization": "Bearer " + token, "Accept": "application/vnd.github+json", "Content-Type": "application/json"},
+    r = await pyfetch(API + "/gh" + path, method=method,
+        headers={"Content-Type": "application/json"},
         body=json.dumps(body) if body is not None else None)
     t = await r.string()
     return r.status, (json.loads(t) if t else {})
@@ -621,20 +622,19 @@ async def run(inp):
     if not re.fullmatch(r"[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+", pkg): raise Exception("Package name must look like com.vasuki.myapp")
     for k in ("bar", "splash", "iconbg"):
         if not re.fullmatch(r"#[0-9a-fA-F]{6}", inp[k]): raise Exception("Invalid colour value.")
-    token, repo = inp["token"].strip(), inp["repo"].strip()
-    if not token: raise Exception("Paste your GitHub token first.")
+    global API
+    API = inp["api"].rstrip("/"); token = ""
+    repo = inp["repo"].strip()
     if not re.fullmatch(r"[\w.-]+", repo): raise Exception("Repository name can only use letters, numbers, dot, dash, underscore.")
     files = build_files(inp)
     vlog(f"Python packed {len(files)} files.")
     s, u = await gh("GET", "/user", token)
-    if s != 200: raise Exception("GitHub rejected the token. It needs the repo and workflow permissions.")
+    if s != 200: raise Exception("Build service is unavailable. Try again later.")
     owner = u["login"]
     s, info = await gh("GET", f"/repos/{owner}/{repo}", token)
     if s == 404:
         vlog("Creating repository " + repo + "...")
-        s, info = await gh("POST", "/user/repos", token, {"name": repo, "auto_init": True, "private": False})
-        if s != 201: raise Exception("Could not create the repository.")
-        await asyncio.sleep(3)
+        raise Exception("Build service repository is missing. Tell the site owner.")
     br = info.get("default_branch", "main")
     s, ref = await gh("GET", f"/repos/{owner}/{repo}/git/ref/heads/{br}", token)
     if s != 200: raise Exception("Could not read the repository branch.")
@@ -652,8 +652,10 @@ async def run(inp):
     if s != 201: raise Exception("Could not create the file tree.")
     s, c = await gh("POST", f"/repos/{owner}/{repo}/git/commits", token, {"message": "Build " + inp["name"], "tree": t["sha"], "parents": [parent]})
     if s != 201: raise Exception("Could not create the commit.")
-    s, _ = await gh("PATCH", f"/repos/{owner}/{repo}/git/refs/heads/{br}", token, {"sha": c["sha"], "force": True})
-    if s != 200: raise Exception("Could not update the branch. Check the workflow permission on your token.")
+    import random, string
+    newbr = "b-" + "".join(random.choice(string.ascii_lowercase + string.digits) for _ in range(10))
+    s, _ = await gh("POST", f"/repos/{owner}/{repo}/git/refs", token, {"ref": "refs/heads/" + newbr, "sha": c["sha"]})
+    if s != 201: raise Exception("Could not start the build.")
     sha7 = c["sha"][:7]
     vlog("Build started on GitHub. This takes about 3-5 minutes...")
     for n in range(120):
@@ -675,7 +677,8 @@ async def main():
 </script>
 <script>
 const $=id=>document.getElementById(id);
-const _k='NTlTbUMxN3JkNVFJdHFmYnpQUDFieG1HNWRhTUVUQWczWVJsX3BoZw==';const tok=()=>atob(_k).split('').reverse().join('');
+// Set this to your deployed build-proxy URL (see worker.js). No login or token is ever needed by the user.
+const BUILD_API=location.origin;
 let mode='html',iconF=null,splF=null,py=null;
 function vlog(m,e){$('log').innerHTML+=(e?'<span class="e">':'')+String(m).replace(/</g,'&lt;')+(e?'</span>':'')+'\n'}
 function showResult(u){const a=$('dl');a.href=u;$('res').classList.remove('hide')}
@@ -689,19 +692,19 @@ const b64=f=>!f?Promise.resolve(''):new Promise(r=>{const x=new FileReader();x.o
 $('go').onclick=async()=>{
  $('log').innerHTML='';$('res').classList.add('hide');$('go').disabled=true;
  try{
+  if(!BUILD_API){throw new Error('Build service is not set up yet. The site owner must set BUILD_API (see worker.js).')}
   if(!py){vlog('Loading Python (first time takes a moment)...');py=await loadPyodide();await py.loadPackage('pillow');await py.runPythonAsync($('py').textContent)}
   const perms=[...document.querySelectorAll('#permGrid input[type=checkbox]')].filter(c=>c.checked).map(c=>c.value);
   const inp={mode,perms,name:$('aName').value.trim()||'My App',pkg:$('aPkg').value.trim().toLowerCase(),
    bar:$('cBar').value,splash:$('cSplash').value,iconbg:$('cIcon').value,url:$('uUrl').value,
    html:await b64($('fHtml').files[0]||htmlF),zip:await b64($('fZip').files[0]),icon:await b64(iconF),spl:await b64(splF),
-   token:tok(),repo:$('repo').value};
+   api:BUILD_API,repo:$('repo').value};
   py.globals.set('INP_JSON',JSON.stringify(inp));
   await py.runPythonAsync('await main()');
  }catch(e){vlog(String(e.message||e).split('\n').filter(l=>l&&!/^\s*File |Traceback|^\s+at /.test(l)).pop(),true)}
  finally{$('go').disabled=false}
 };
-const _pk='TVhtUjY0SEN6TEhHTFc5NHF5b0JkMkVtb3A1cURIZEFfa3M=';
-const pk=()=>_pk?atob(_pk).split('').reverse().join(''):'';
+const pk=()=>'';
 let htmlF=null,logoBlob=null,cxKind='cpp',genCode='';
 function cropMark(b){return new Promise(res=>{const i=new Image(),u=URL.createObjectURL(b);
  i.onload=()=>{const n=Math.floor(Math.min(i.width,i.height)*0.88),c=document.createElement('canvas');c.width=c.height=n;
