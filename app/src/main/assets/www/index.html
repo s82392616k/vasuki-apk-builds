@@ -79,6 +79,19 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </section>
 
 <section>
+<h2>3. Permissions</h2>
+<label style="margin-top:0">Tick what your app's buttons need. The APK will declare these and ask the phone for them on first launch.</label>
+<div id="permGrid" style="display:grid;gap:8px;margin-top:8px;font:14px system-ui,sans-serif">
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="files" checked style="margin-top:2px"><span><b>Files &amp; downloads</b><br><span style="color:var(--mut);font-size:.85rem">Pick files, save downloads. Android's own file picker needs no permission on Android 10+.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="camera" checked style="margin-top:2px"><span><b>Camera</b><br><span style="color:var(--mut);font-size:.85rem">For "Take photo" buttons and camera preview.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="mic" style="margin-top:2px"><span><b>Microphone</b><br><span style="color:var(--mut);font-size:.85rem">For voice recording or audio input.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="location" style="margin-top:2px"><span><b>Location</b><br><span style="color:var(--mut);font-size:.85rem">For maps, nearby search or location buttons.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="notifications" style="margin-top:2px"><span><b>Notifications</b><br><span style="color:var(--mut);font-size:.85rem">For reminders and alerts (Android 13 and newer).</span></span></label>
+</div>
+<span class="note" style="display:block;margin-top:10px">Internet access is always added. The app asks only for what you tick here, and only when it is first opened.</span>
+</section>
+
+<section>
 <h2>Venjix AI Logo Maker</h2>
 <label for="lp">Describe your logo</label>
 <input type="text" id="lp" placeholder="green snake coiled in a circle, minimal">
@@ -99,7 +112,7 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </section>
 
 <section>
-<h2>3. App icon</h2>
+<h2>4. App icon</h2>
 <div class="pick">
 <div class="thumb" id="iconPrev"></div>
 <div class="row">
@@ -113,7 +126,7 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </section>
 
 <section>
-<h2>4. Splash screen</h2>
+<h2>5. Splash screen</h2>
 <div class="pick">
 <div class="thumb sp" id="splPrev"></div>
 <div class="row">
@@ -129,7 +142,7 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </section>
 
 <section>
-<h2>5. Colours</h2>
+<h2>6. Colours</h2>
 <div class="colors">
 <div><label for="cBar">Status bar</label><input type="color" id="cBar" value="#0f5c3a"></div>
 <div><label for="cSplash">Splash background</label><input type="color" id="cSplash" value="#ffffff"></div>
@@ -138,7 +151,7 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </section>
 
 <section class="hide">
-<h2>6. Build account</h2>
+<h2>7. Build account</h2>
 <p class="note">Python in this page packs your app, then a free GitHub account compiles the real APK. Use a repository used only for this tool, because its files are replaced on every build.</p>
 <label for="repo">Repository name</label>
 <input type="text" id="repo" value="vasuki-apk-builds">
@@ -166,6 +179,27 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </section>
 <p class="sub" style="text-align:center;margin:4px 0 18px"><a href="https://oryx-ffcb84e0.base44.app/functions/apkConverter?download=1" style="color:var(--g)">Download this tool as an HTML file</a></p>
 </main>
+
+<footer style="max-width:640px;margin:0 auto 8px;padding:16px;text-align:center;border-top:1px solid var(--line);font-family:system-ui,sans-serif">
+<a id="vlink" href="https://vasukihomepage.netlify.app" target="_blank" rel="noopener noreferrer" style="display:block;padding:4px 0;color:inherit;text-decoration:none;-webkit-tap-highlight-color:rgba(15,92,58,.18)">
+<p style="margin:0 0 6px;font-size:.9rem;color:var(--mut)">Get touch with us through</p>
+<p style="margin:0 0 10px;font-size:1rem"><span style="color:var(--g);font-weight:600;text-decoration:underline;text-underline-offset:2px">vasukihomepage.netlify.app</span></p>
+<p style="margin:0;font-size:.85rem;color:var(--mut)">Made in India</p>
+</a>
+</footer>
+<script>
+(function(){
+  var a=document.getElementById('vlink'),URL_='https://vasukihomepage.netlify.app';
+  if(!a)return;
+  a.addEventListener('click',function(e){
+    var w=null;
+    try{w=window.open(URL_,'_blank')}catch(_){}
+    if(w){e.preventDefault();try{w.opener=null}catch(_){}return}
+    // popup blocked (common inside app previews/WebViews): leave the anchor alone
+    // so the browser's own navigation (target=_blank) handles it
+  });
+})();
+</script>
 
 <div id="ed" class="hide">
 <div id="edbody">
@@ -220,19 +254,100 @@ from js import vlog, showResult
 JAVA = '''package __PKG__;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.View;
+import android.webkit.DownloadListener;
+import android.webkit.GeolocationPermissions;
+import android.webkit.PermissionRequest;
+import android.webkit.URLUtil;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends Activity {
+  private static final int REQ_FILE = 1001;
+  private static final int REQ_CAM = 1002;
+  private static final int REQ_PERM = 1003;
+  private static final boolean CAM = __WANT_CAM__;
+  private static final boolean MIC = __WANT_MIC__;
+  private static final boolean FILES = __WANT_FILES__;
+  private static final boolean LOC = __WANT_LOC__;
+  private static final boolean NOTIF = __WANT_NOTIF__;
+
   private WebView web;
+  private ValueCallback<Uri[]> fileCb;
+  private Uri camUri;
+
+  private List<String> needed() {
+    List<String> l = new ArrayList<String>();
+    if (CAM) {
+      l.add(android.Manifest.permission.CAMERA);
+      if (Build.VERSION.SDK_INT <= 28) l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    }
+    if (MIC) l.add(android.Manifest.permission.RECORD_AUDIO);
+    if (LOC) {
+      l.add(android.Manifest.permission.ACCESS_FINE_LOCATION);
+      l.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);
+    }
+    if (NOTIF && Build.VERSION.SDK_INT >= 33) l.add("android.permission.POST_NOTIFICATIONS");
+    if (FILES) {
+      if (Build.VERSION.SDK_INT >= 33) {
+        l.add("android.permission.READ_MEDIA_IMAGES");
+        l.add("android.permission.READ_MEDIA_VIDEO");
+      } else if (Build.VERSION.SDK_INT <= 28) {
+        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+        l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+      } else {
+        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);
+      }
+    }
+    return l;
+  }
+
+  private void askPerms() {
+    List<String> need = new ArrayList<String>();
+    for (String p : needed()) {
+      if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) need.add(p);
+    }
+    if (!need.isEmpty()) requestPermissions(need.toArray(new String[0]), REQ_PERM);
+  }
+
+  private void saveDownload(String url, String cd, String mime) {
+    try {
+      if (url == null || url.startsWith("blob:") || url.startsWith("data:")) {
+        Toast.makeText(this, "This file is made inside the page and cannot be saved by the app. Use a web link instead.", Toast.LENGTH_LONG).show();
+        return;
+      }
+      String name = URLUtil.guessFileName(url, cd, mime);
+      DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+      DownloadManager.Request rq = new DownloadManager.Request(Uri.parse(url));
+      rq.setTitle(name);
+      rq.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+      rq.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);
+      dm.enqueue(rq);
+      Toast.makeText(this, "Downloading " + name, Toast.LENGTH_SHORT).show();
+    } catch (Exception e) {
+      Toast.makeText(this, "Could not start the download.", Toast.LENGTH_SHORT).show();
+    }
+  }
+
   @Override protected void onCreate(Bundle b) {
     super.onCreate(b);
     getWindow().setStatusBarColor(Color.parseColor("__BAR__"));
@@ -242,9 +357,71 @@ public class MainActivity extends Activity {
     s.setJavaScriptEnabled(true);
     s.setDomStorageEnabled(true);
     s.setAllowFileAccess(true);
+    s.setAllowContentAccess(true);
     s.setMediaPlaybackRequiresUserGesture(false);
+    s.setGeolocationEnabled(__WANT_GEO__);
+    s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
     web.setWebViewClient(new WebViewClient());
-    web.setWebChromeClient(new WebChromeClient());
+    web.setWebChromeClient(new WebChromeClient() {
+      @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {
+        if (fileCb != null) fileCb.onReceiveValue(null);
+        fileCb = cb;
+        boolean snap = CAM && p != null && p.isCaptureEnabled();
+        if (snap) {
+          try {
+            ContentValues cv = new ContentValues();
+            cv.put(MediaStore.Images.Media.DISPLAY_NAME, "vasuki_" + System.currentTimeMillis() + ".jpg");
+            cv.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            camUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
+            Intent ci = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            ci.putExtra(MediaStore.EXTRA_OUTPUT, camUri);
+            startActivityForResult(ci, REQ_CAM);
+            return true;
+          } catch (Exception e) {
+            camUri = null;
+          }
+        }
+        Intent get = new Intent(Intent.ACTION_GET_CONTENT);
+        get.addCategory(Intent.CATEGORY_OPENABLE);
+        get.setType("*/*");
+        if (p != null && p.getAcceptTypes() != null && p.getAcceptTypes().length > 0) {
+          String[] acc = p.getAcceptTypes();
+          if (acc.length == 1) {
+            String a = acc[0];
+            if (a.startsWith(".")) get.setType("*/*"); else get.setType(a);
+          } else {
+            get.putExtra(Intent.EXTRA_MIME_TYPES, acc);
+          }
+        }
+        if (p != null && p.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) get.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+        try {
+          startActivityForResult(Intent.createChooser(get, "Select file"), REQ_FILE);
+        } catch (Exception e) {
+          if (fileCb != null) fileCb.onReceiveValue(null);
+          fileCb = null;
+          Toast.makeText(MainActivity.this, "No file picker found on this phone.", Toast.LENGTH_SHORT).show();
+        }
+        return true;
+      }
+      @Override public void onPermissionRequest(final PermissionRequest r) {
+        runOnUiThread(new Runnable() { public void run() {
+          List<String> ok = new ArrayList<String>();
+          for (String res : r.getResources()) {
+            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res) && CAM) ok.add(res);
+            else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && MIC) ok.add(res);
+          }
+          if (ok.isEmpty()) r.deny(); else r.grant(ok.toArray(new String[0]));
+        }});
+      }
+      @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback cb) {
+        cb.invoke(origin, LOC, false);
+      }
+    });
+    web.setDownloadListener(new DownloadListener() {
+      public void onDownloadStart(String url, String ua, String cd, String mime, long len) {
+        saveDownload(url, cd, mime);
+      }
+    });
     root.addView(web);
     final ImageView splash = new ImageView(this);
     splash.setBackgroundColor(Color.parseColor("__SPLASHBG__"));
@@ -253,8 +430,33 @@ public class MainActivity extends Activity {
     root.addView(splash, new FrameLayout.LayoutParams(-1, -1));
     setContentView(root);
     web.loadUrl(__URL__);
+    askPerms();
     new Handler().postDelayed(new Runnable() { public void run() { splash.setVisibility(View.GONE); } }, 2000);
   }
+
+  @Override protected void onActivityResult(int req, int res, Intent data) {
+    if (req == REQ_FILE || req == REQ_CAM) {
+      Uri[] out = null;
+      if (res == RESULT_OK) {
+        if (req == REQ_CAM) {
+          if (camUri != null) out = new Uri[]{camUri};
+        } else if (data != null) {
+          if (data.getClipData() != null) {
+            int n = data.getClipData().getItemCount();
+            out = new Uri[n];
+            for (int i = 0; i < n; i++) out[i] = data.getClipData().getItemAt(i).getUri();
+          } else if (data.getData() != null) {
+            out = new Uri[]{data.getData()};
+          }
+        }
+      }
+      if (fileCb != null) { fileCb.onReceiveValue(out); fileCb = null; }
+      camUri = null;
+      return;
+    }
+    super.onActivityResult(req, res, data);
+  }
+
   @Override public void onBackPressed() {
     if (web.canGoBack()) web.goBack(); else super.onBackPressed();
   }
@@ -262,7 +464,11 @@ public class MainActivity extends Activity {
 '''
 MANIFEST = '''<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-  <uses-permission android:name="android.permission.INTERNET"/>
+__PERMS__
+  <queries>
+    <intent><action android:name="android.media.action.IMAGE_CAPTURE"/></intent>
+    <intent><action android:name="android.intent.action.GET_CONTENT"/></intent>
+  </queries>
   <application android:label=__LABEL__ android:icon="@mipmap/ic_launcher" android:usesCleartextTraffic="true" android:theme="@android:style/Theme.Material.Light.NoActionBar">
     <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize|keyboardHidden">
       <intent-filter>
@@ -319,6 +525,30 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 '''
 
+def perm_block(perms):
+    L = ['  <uses-permission android:name="android.permission.INTERNET"/>',
+         '  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>']
+    if "files" in perms or "camera" in perms:
+        L.append('  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>')
+        L.append('  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>')
+    if "files" in perms:
+        L.append('  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>')
+        L.append('  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>')
+    if "camera" in perms:
+        L.append('  <uses-permission android:name="android.permission.CAMERA"/>')
+        L.append('  <uses-feature android:name="android.hardware.camera" android:required="false"/>')
+    if "mic" in perms:
+        L.append('  <uses-permission android:name="android.permission.RECORD_AUDIO"/>')
+        L.append('  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>')
+        L.append('  <uses-feature android:name="android.hardware.microphone" android:required="false"/>')
+    if "location" in perms:
+        L.append('  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>')
+        L.append('  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>')
+        L.append('  <uses-feature android:name="android.hardware.location.gps" android:required="false"/>')
+    if "notifications" in perms:
+        L.append('  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>')
+    return chr(10).join(L)
+
 def render(img, w, h, bg=None, cover=False):
     img = img.convert("RGBA")
     s = (max if cover else min)(w / img.width, h / img.height)
@@ -362,8 +592,14 @@ def build_files(inp):
     for d, s in {"mdpi": 48, "hdpi": 72, "xhdpi": 96, "xxhdpi": 144, "xxxhdpi": 192}.items():
         f[f"app/src/main/res/mipmap-{d}/ic_launcher.png"] = to_png(render(icon, s, s, inp["iconbg"], True))
     f["app/src/main/res/drawable-nodpi/splash.png"] = to_png(render(spl if spl is not None else icon, 512, 512))
+    perms = [p for p in (inp.get("perms") or []) if p in ("files", "camera", "mic", "location", "notifications")]
+    has = lambda k: "true" if k in perms else "false"
     sub = lambda t: (t.replace("__PKG__", pkg).replace("__BAR__", inp["bar"]).replace("__SPLASHBG__", inp["splash"])
-                     .replace("__URL__", json.dumps(url)).replace("__LABEL__", quoteattr(name))).encode()
+                     .replace("__URL__", json.dumps(url)).replace("__LABEL__", quoteattr(name))
+                     .replace("__PERMS__", perm_block(perms))
+                     .replace("__WANT_CAM__", has("camera")).replace("__WANT_MIC__", has("mic"))
+                     .replace("__WANT_FILES__", has("files")).replace("__WANT_LOC__", has("location"))
+                     .replace("__WANT_GEO__", has("location")).replace("__WANT_NOTIF__", has("notifications"))).encode()
     f["app/src/main/java/" + pkg.replace(".", "/") + "/MainActivity.java"] = sub(JAVA)
     f["app/src/main/AndroidManifest.xml"] = sub(MANIFEST)
     f["app/build.gradle"] = sub(APP_GRADLE)
@@ -454,7 +690,8 @@ $('go').onclick=async()=>{
  $('log').innerHTML='';$('res').classList.add('hide');$('go').disabled=true;
  try{
   if(!py){vlog('Loading Python (first time takes a moment)...');py=await loadPyodide();await py.loadPackage('pillow');await py.runPythonAsync($('py').textContent)}
-  const inp={mode,name:$('aName').value.trim()||'My App',pkg:$('aPkg').value.trim().toLowerCase(),
+  const perms=[...document.querySelectorAll('#permGrid input[type=checkbox]')].filter(c=>c.checked).map(c=>c.value);
+  const inp={mode,perms,name:$('aName').value.trim()||'My App',pkg:$('aPkg').value.trim().toLowerCase(),
    bar:$('cBar').value,splash:$('cSplash').value,iconbg:$('cIcon').value,url:$('uUrl').value,
    html:await b64($('fHtml').files[0]||htmlF),zip:await b64($('fZip').files[0]),icon:await b64(iconF),spl:await b64(splF),
    token:tok(),repo:$('repo').value};
