@@ -28,7 +28,7 @@ public class MainActivity extends Activity {
     web.setWebChromeClient(new WebChromeClient());
     root.addView(web);
     final ImageView splash = new ImageView(this);
-    splash.setBackgroundColor(Color.parseColor("#ffff00"));
+    splash.setBackgroundColor(Color.parseColor("#ffffff"));
     splash.setImageResource(R.drawable.splash);
     splash.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
     root.addView(splash, new FrameLayout.LayoutParams(-1, -1));
