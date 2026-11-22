@@ -28,10 +28,9 @@ public class MainActivity extends Activity {
     web.setWebChromeClient(new WebChromeClient());
     root.addView(web);
     final ImageView splash = new ImageView(this);
-    splash.setBackgroundColor(Color.parseColor("#ffffff"));
+    splash.setBackgroundColor(Color.parseColor("#ffff00"));
     splash.setImageResource(R.drawable.splash);
     splash.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-    splash.setPadding(80, 80, 80, 80);
     root.addView(splash, new FrameLayout.LayoutParams(-1, -1));
     setContentView(root);
     web.loadUrl("file:///android_asset/www/index.html");
