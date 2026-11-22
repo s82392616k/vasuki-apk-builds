@@ -179,11 +179,13 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </div>
 <div id="c-rot" class="row hide"><button class="btn" id="rL">Rotate left</button><button class="btn" id="rR">Rotate right</button></div>
 <div id="c-text" class="hide">
-<div class="row"><input type="text" id="tTxt" placeholder="Your text" style="flex:1;min-width:120px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><input type="color" id="tCol" value="#ffffff" style="width:56px;height:44px"></div>
-<div class="row" style="margin-top:8px"><select id="tFont" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="serif">Serif</option><option value="sans">Sans</option><option value="display">Display bold</option><option value="mono">Mono</option></select><select id="tOut" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="soft">Soft outline</option><option value="bold">Bold outline</option><option value="none">No outline (sharpest)</option></select></div>
+<div class="row"><input type="text" id="tTxt" placeholder="Your text" style="flex:1;min-width:120px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"></div>
+<div class="row" style="margin-top:8px"><span class="tag">Top</span><input type="color" id="tCol" value="#ffffff" style="flex:1;min-width:52px;height:42px"><span class="tag">Bottom</span><input type="color" id="tCol2" value="#ffffff" style="flex:1;min-width:52px;height:42px"><button class="btn" id="tColSwap">Swap</button></div>
+<div class="row" style="margin-top:8px"><select id="tFill" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="solid">Normal colour</option><option value="glitter">Glitter</option></select></div>
+<div class="row" style="margin-top:8px"><select id="tFont" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="serif">Serif</option><option value="sans">Sans</option><option value="display">Display bold</option><option value="mono">Mono</option></select><select id="tOut" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="soft">Thin outline</option><option value="bold">Bold outline</option><option value="none">No outline (sharpest)</option></select></div>
 <div class="row" style="margin-top:8px"><button class="btn" id="tSmall">A- Small</button><input type="range" id="tSz" min="2" max="80" value="12" style="flex:1;min-width:90px"><button class="btn" id="tBig">A+ Large</button><span class="tag" id="tSzLbl">12%</span></div>
-<div class="row" style="margin-top:8px"><button class="btn main" id="tApply" style="flex:1;width:auto;margin:0">Add text</button><button class="btn" id="tDrop">Remove</button></div>
-<div class="note" style="margin-top:8px">Tap the picture to place the text, drag it to move it, and scroll or pinch to resize. Text is drawn at the picture's own resolution (up to 1600 px), so letters stay sharp in the APK. Then tap Add text.</div>
+<div class="row" style="margin-top:8px"><button class="btn main" id="tApply" style="flex:1;width:auto;margin:0">Add text</button><button class="btn" id="tStraight">Straighten</button><button class="btn" id="tDrop">Remove</button></div>
+<div class="note" style="margin-top:8px">Tap the picture to place the text. Drag the middle to move it, drag a corner dot to make it big or small, drag the round dot above to rotate it, or scroll and pinch. Then tap Add text.</div>
 </div>
 <div id="c-erase">
 <div class="tabs" id="eMode" style="margin-bottom:8px">
@@ -534,7 +536,7 @@ let hist=[],tool='erase',crop=null,ratio=0,origRatio=1,cropDrag=null,erasing=fal
 let strokes=[],curStroke=null,zoom=1,fitScale=1,panMode=false,panStart=null,origSnap=null,peeking=false;
 let txt=null,txtDrag=null,pinch=null,ptrMap=new Map(),txtBefore=null;
 function clearOv(){EO.width=EC.width;EO.height=EC.height;EOX.clearRect(0,0,EO.width,EO.height)}
-function push(){const c=document.createElement('canvas');c.width=EC.width;c.height=EC.height;c.getContext('2d').drawImage(EC,0,0);hist.push(c);if(hist.length>12)hist.shift()}
+function push(){const c=document.createElement('canvas');c.width=EC.width;c.height=EC.height;c.getContext('2d').drawImage(EC,0,0);hist.push(c);if(hist.length>8)hist.shift()}
 function pxScale(){const r=EO.getBoundingClientRect();return r.width?EC.width/r.width:1}
 function clampCrop(c){const W=EC.width,H=EC.height;
  c.w=Math.min(Math.max(8,c.w),W);c.h=Math.min(Math.max(8,c.h),H);
@@ -609,9 +611,14 @@ function setTool(t){
 $('edtabs').onclick=e=>{const t=e.target.dataset.e;if(t)setTool(t)};
 function openEd(blob,cb,bg){
  const i=new Image();
- i.onload=()=>{const k=Math.min(1,1600/Math.max(i.width,i.height));
-  EC.width=Math.max(1,Math.round(i.width*k));EC.height=Math.max(1,Math.round(i.height*k));
+ i.onload=()=>{
+  let sw=i.width,sh=i.height;const mx=Math.max(sw,sh);let up=false;
+  if(mx<512&&mx>0){const u=512/mx;sw=Math.round(sw*u);sh=Math.round(sh*u);up=true}
+  const k=Math.min(1,2400/Math.max(sw,sh));
+  EC.width=Math.max(1,Math.round(sw*k));EC.height=Math.max(1,Math.round(sh*k));
+  ECX.imageSmoothingEnabled=true;ECX.imageSmoothingQuality='high';
   ECX.clearRect(0,0,EC.width,EC.height);ECX.drawImage(i,0,0,EC.width,EC.height);
+  if(up)vlog('Picture was small, so it is enlarged to '+EC.width+' x '+EC.height+' px. Text stays sharp at icon size.');
   $('edwrap').style.background=bg||'#ffffff';
   maskReset();hist=[];edCb=cb;origRatio=EC.width/EC.height;setTool('erase');$('ed').classList.remove('hide');
   origSnap=document.createElement('canvas');origSnap.width=EC.width;origSnap.height=EC.height;origSnap.getContext('2d').drawImage(EC,0,0);
@@ -850,20 +857,27 @@ function startPinch(){
  if(!d)return;
  if(txtBefore&&txtBefore.x!=null&&txtBefore.str){txt={str:txtBefore.str,x:txtBefore.x,y:txtBefore.y};txtDrag=null;drawTextPreview()}
  txtBefore=null;
- pinch={d:d,sz:Number($('tSz').value)}}
+ pinch={d:d,sz:Number($('tSz').value),ang:Math.atan2(v[1].y-v[0].y,v[1].x-v[0].x),rot:txt?(txt.rot||0):0}}
 function updatePinch(){
  const v=[...ptrMap.values()];if(!pinch||v.length<2)return;
  const d=Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y);
  if(!pinch.d)return;
- setTxtSize(pinch.sz*d/pinch.d)}
+ setTxtSize(pinch.sz*d/pinch.d);
+ if(txt){const a=Math.atan2(v[1].y-v[0].y,v[1].x-v[0].x);
+  txt.rot=snapRot(pinch.rot+(a-pinch.ang));drawTextPreview()}}
 $('tSz').oninput=()=>{$('tSzLbl').textContent=$('tSz').value+'%';drawTextPreview()};
 $('tSmall').onclick=()=>setTxtSize(Number($('tSz').value)-4);
 $('tBig').onclick=()=>setTxtSize(Number($('tSz').value)+4);
 $('tTxt').oninput=()=>{const v=$('tTxt').value;if(txt){txt.str=v.trim();drawTextPreview()}};
 $('tCol').oninput=()=>drawTextPreview();
 $('tFont').onchange=()=>drawTextPreview();
+$('tFill').onchange=()=>drawTextPreview();
+$('tCol2').oninput=()=>drawTextPreview();
+$('tColSwap').onclick=()=>{const a=$('tCol').value,b=$('tCol2').value;$('tCol').value=b;$('tCol2').value=a;drawTextPreview()};
 $('tOut').onchange=()=>drawTextPreview();
 $('tApply').onclick=()=>{if(applyText())vlog('Text added to the picture.')};
+$('tStraight').onclick=()=>{if(!txt){vlog('Place the text first.',true);return}
+ txt.rot=0;drawTextPreview();vlog('Text straightened.')};
 $('tDrop').onclick=()=>{if(!txt){vlog('No text on the picture yet.',true);return}txt=null;clearOv();vlog('Text removed. Tap the picture to place it again.')};
 EO.addEventListener('wheel',e=>{if(tool!=='text')return;e.preventDefault();setTxtSize(Number($('tSz').value)+(e.deltaY<0?2:-2))},{passive:false});
 $('tSzLbl').textContent=$('tSz').value+'%';
@@ -896,28 +910,113 @@ function txtFont(size){const f=FONTS[$('tFont').value]||FONTS.serif;return 'bold
 function txtOutline(size){
  const v=$('tOut').value;
  if(v==='none')return null;
- if(v==='bold')return {c:'rgba(0,0,0,.6)',w:Math.max(3,size/8)};
- return {c:'rgba(0,0,0,.35)',w:Math.max(2,size/12)}}
-function paintText(ctx,str,x,y,size,col){
- ctx.save();ctx.font=txtFont(size);ctx.textAlign='center';ctx.textBaseline='middle';
+ if(v==='bold')return {c:'rgba(0,0,0,.92)',w:Math.max(3,size/9)};
+ return {c:'rgba(0,0,0,.82)',w:Math.max(1.5,size/16)}}
+function rndGen(seed){let x=seed||7;return function(){x=(x*1103515245+12345)&0x7fffffff;return x/0x7fffffff}}
+function hx(c){c=(c||'#ffffff').replace('#','');if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+ return [parseInt(c.slice(0,2),16)||0,parseInt(c.slice(2,4),16)||0,parseInt(c.slice(4,6),16)||0]}
+function mixCol(a,b,t){const p=hx(a),q=hx(b);
+ return 'rgb('+Math.round(p[0]+(q[0]-p[0])*t)+','+Math.round(p[1]+(q[1]-p[1])*t)+','+Math.round(p[2]+(q[2]-p[2])*t)+')'}
+function paintGlitter(ctx,str,size,c1,c2){
+ const w=Math.max(4,Math.ceil(txtWidth(str,size))),h=Math.max(4,Math.ceil(size*1.5));
+ const t=document.createElement('canvas');t.width=w;t.height=h;
+ const tx=t.getContext('2d');
+ tx.font=txtFont(size);tx.textAlign='center';tx.textBaseline='middle';
+ tx.fillStyle='#ffffff';tx.fillText(str,w/2,h/2);
+ tx.globalCompositeOperation='source-in';
+ const g=tx.createLinearGradient(0,0,0,h);
+ g.addColorStop(0,c1);g.addColorStop(1,c2);
+ tx.fillStyle=g;tx.fillRect(0,0,w,h);
+ tx.globalCompositeOperation='source-atop';
+ const rand=rndGen(97+str.length*13),n=Math.min(460,Math.max(16,Math.round(w*h/650)));
+ const light1=mixCol(c1,'#ffffff',0.82),light2=mixCol(c2,'#ffffff',0.82);
+ const dark1=mixCol(c1,'#000000',0.42),dark2=mixCol(c2,'#000000',0.42);
+ for(let i=0;i<n;i++){
+  const r=Math.max(0.5,size*(0.010+rand()*0.030));
+  const y=rand()*h,k=y/h;
+  const light=rand()<0.62;
+  tx.beginPath();tx.arc(rand()*w,y,r,0,6.2832);
+  tx.globalAlpha=(light?0.35+rand()*0.55:0.22+rand()*0.40);
+  tx.fillStyle=light?(k<0.5?light1:light2):(k<0.5?dark1:dark2);
+  tx.fill()}
+ tx.globalAlpha=1;
+ ctx.drawImage(t,-w/2,-h/2)}
+function paintText(ctx,str,x,y,size,col,rot,fill,c2){
+ ctx.save();ctx.translate(x,y);if(rot)ctx.rotate(rot);
+ ctx.font=txtFont(size);ctx.textAlign='center';ctx.textBaseline='middle';
  try{ctx.textRendering='geometricPrecision'}catch(_){}
  ctx.lineJoin='round';ctx.lineCap='round';
  const o=txtOutline(size);
- if(o){ctx.lineWidth=o.w;ctx.strokeStyle=o.c;ctx.strokeText(str,x,y)}
- ctx.fillStyle=col;ctx.fillText(str,x,y);ctx.restore()}
+ if(o){ctx.lineWidth=o.w;ctx.strokeStyle=o.c;ctx.strokeText(str,0,0)}
+ if(fill==='glitter')paintGlitter(ctx,str,size,col,c2||col);
+ else{
+  const g=ctx.createLinearGradient(0,-size*0.62,0,size*0.62);
+  g.addColorStop(0,col);g.addColorStop(1,c2||col);
+  ctx.fillStyle=g;ctx.fillText(str,0,0)}
+ ctx.restore()}
+function handleR(){return Math.max(4,Math.round(EC.width*0.009))}
+function touchR(){return Math.max(18,Math.round(EC.width*0.045))}
+let lastSnap=false;
+function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms)}catch(_){}}
+function txtGeom(){
+ const str=txt.str||'';
+ const size=txtSize(),w=Math.max(1,txtWidth(str,size)),h=size*1.25,rot=txt.rot||0;
+ const c=Math.cos(rot),sn=Math.sin(rot);
+ const pt=(dx,dy)=>({x:txt.x+dx*c-dy*sn,y:txt.y+dx*sn+dy*c});
+ const hw=w/2+size*0.16,hh=h/2+size*0.12;
+ const top=pt(0,-hh-Math.max(handleR()*3,size*0.55));
+ return {size:size,w:w,h:h,hw:hw,hh:hh,rot:rot,
+  corners:[pt(-hw,-hh),pt(hw,-hh),pt(hw,hh),pt(-hw,hh)],
+  top:pt(0,-hh),rotHandle:top}}
+function localPt(g,p){const c=Math.cos(-g.rot),sn=Math.sin(-g.rot),dx=p.x-g.cx,dy=p.y-g.cy;
+ return {x:dx*c-dy*sn,y:dx*sn+dy*c}}
+function hitText(p){
+ if(!txt)return null;
+ const g=txtGeom(),r=touchR();
+ if(Math.hypot(p.x-g.rotHandle.x,p.y-g.rotHandle.y)<=r)return {kind:'rotate',g:g};
+ for(let i=0;i<4;i++){const c=g.corners[i];
+  if(Math.hypot(p.x-c.x,p.y-c.y)<=r)return {kind:'scale',g:g,i:i}}
+ const lp=localPt({rot:g.rot,cx:txt.x,cy:txt.y},p);
+ if(Math.abs(lp.x)<=g.hw&&Math.abs(lp.y)<=g.hh)return {kind:'move',g:g};
+ return null}
+function snapRot(a){
+ const step=Math.PI/12,t=Math.round(a/step)*step;
+ return Math.abs(a-t)<0.07?t:a}
 function txtWidth(str,size){ECX.save();ECX.font=txtFont(size);const w=ECX.measureText(str).width;ECX.restore();return w}
-function drawTextPreview(){
+function drawGuides(sx,sy){
+ const lw=Math.max(1,EC.width/500),cx=EC.width/2,cy=EC.height/2;
+ const dash=Math.max(7,EC.width*0.012),gap=Math.max(6,EC.width*0.009);
+ EOX.save();
+ EOX.setLineDash([dash,gap]);EOX.lineWidth=lw*1.6;EOX.strokeStyle='rgba(255,255,255,.32)';
+ EOX.beginPath();EOX.moveTo(cx,0);EOX.lineTo(cx,EC.height);EOX.moveTo(0,cy);EOX.lineTo(EC.width,cy);EOX.stroke();
+ EOX.setLineDash([]);EOX.lineWidth=lw*2.6;
+ if(sx){EOX.strokeStyle='rgba(255,214,102,.95)';EOX.beginPath();EOX.moveTo(cx,0);EOX.lineTo(cx,EC.height);EOX.stroke()}
+ if(sy){EOX.strokeStyle='rgba(255,214,102,.95)';EOX.beginPath();EOX.moveTo(0,cy);EOX.lineTo(EC.width,cy);EOX.stroke()}
+ EOX.restore()}
+function drawTextPreview(sx,sy){
  if(tool!=='text')return;
  clearOv();
+ drawGuides(sx,sy);
  if(!txt||!txt.str)return;
  const size=txtSize(),str=txt.str;
- paintText(EOX,str,txt.x,txt.y,size,$('tCol').value);
+ paintText(EOX,str,txt.x,txt.y,size,$('tCol').value,txt.rot||0,$('tFill').value,$('tCol2').value);
+ const g=txtGeom(),lw=Math.max(1,EC.width/500),r=handleR();
  EOX.save();
- const w=txtWidth(str,size),lw=Math.max(1,EC.width/500);
- EOX.setLineDash([6,5]);EOX.lineWidth=lw*2;EOX.strokeStyle='rgba(0,0,0,.5)';
- EOX.strokeRect(txt.x-w/2-10,txt.y-size*0.8,w+20,size*1.6);
- EOX.setLineDash([]);EOX.lineWidth=lw;EOX.strokeStyle='rgba(255,255,255,.95)';
- EOX.strokeRect(txt.x-w/2-10,txt.y-size*0.8,w+20,size*1.6);
+ EOX.beginPath();
+ EOX.moveTo(g.corners[0].x,g.corners[0].y);
+ for(let i=1;i<4;i++)EOX.lineTo(g.corners[i].x,g.corners[i].y);
+ EOX.closePath();
+ EOX.setLineDash([8,6]);EOX.lineWidth=lw*2.4;EOX.strokeStyle='rgba(0,0,0,.45)';EOX.stroke();
+ EOX.setLineDash([]);EOX.lineWidth=lw*1.2;EOX.strokeStyle='rgba(255,255,255,.95)';EOX.stroke();
+ EOX.beginPath();EOX.moveTo(g.top.x,g.top.y);EOX.lineTo(g.rotHandle.x,g.rotHandle.y);
+ EOX.lineWidth=lw*1.2;EOX.strokeStyle='rgba(255,255,255,.95)';EOX.stroke();
+ for(const c of g.corners){
+  EOX.beginPath();EOX.arc(c.x,c.y,r,0,6.2832);
+  EOX.fillStyle='#ffffff';EOX.fill();EOX.lineWidth=lw*1.1;EOX.strokeStyle='rgba(15,92,58,.9)';EOX.stroke()}
+ EOX.beginPath();EOX.arc(g.rotHandle.x,g.rotHandle.y,r*1.15,0,6.2832);
+ EOX.fillStyle='#0f5c3a';EOX.fill();EOX.lineWidth=lw*1.1;EOX.strokeStyle='#ffffff';EOX.stroke();
+ EOX.beginPath();EOX.arc(g.rotHandle.x,g.rotHandle.y,r*0.4,0,6.2832);
+ EOX.fillStyle='#ffffff';EOX.fill();
  EOX.restore()}
 function setTxtSize(v){const n=Math.max(2,Math.min(80,Math.round(v)));
  $('tSz').value=n;$('tSzLbl').textContent=n+'%';drawTextPreview()}
@@ -927,7 +1026,7 @@ function applyText(){
  if(!txt){vlog('Tap the picture to place the text first.',true);return false}
  push();
  const size=txtSize();
- paintText(ECX,t,txt.x,txt.y,size,$('tCol').value);
+ paintText(ECX,t,txt.x,txt.y,size,$('tCol').value,txt.rot||0,$('tFill').value,$('tCol2').value);
  txt=null;clearOv();return true}
 function drawCursor(p){
  if(tool!=='erase')return;
@@ -953,13 +1052,24 @@ EO.onpointerdown=e=>{
   ptrMap.set(e.pointerId,p);
   if(ptrMap.size===1)txtBefore={str:txt?txt.str:null,x:txt?txt.x:null,y:txt?txt.y:null};
   if(ptrMap.size===2){startPinch();return}
-  const size=txtSize();
   if(txt&&txt.str===t){
-   const w=txtWidth(t,size);
-   if(Math.abs(p.x-txt.x)<=w/2+14&&Math.abs(p.y-txt.y)<=size*0.95){
-    txtDrag={dx:p.x-txt.x,dy:p.y-txt.y};EO.style.cursor='move';drawTextPreview();return}}
-  txt={str:t,x:p.x,y:p.y};txtDrag={dx:0,dy:0};drawTextPreview();
-  vlog('Text placed. Drag to move it, scroll or pinch to resize.');
+   const hit=hitText(p);
+   if(hit&&hit.kind==='rotate'){
+    txtDrag={mode:'rotate',off:Math.atan2(p.y-txt.y,p.x-txt.x)-(txt.rot||0)};
+    EO.style.cursor='grabbing';return}
+   if(hit&&hit.kind==='scale'){
+    const g=hit.g;
+    txtDrag={mode:'scale',d0:Math.max(1,Math.hypot(p.x-txt.x,p.y-txt.y)),s0:Number($('tSz').value),g:g};
+    EO.style.cursor='nwse-resize';return}
+   if(hit&&hit.kind==='move'){
+    lastSnap=false;txtDrag={mode:'move',dx:p.x-txt.x,dy:p.y-txt.y};EO.style.cursor='move';return}}
+  let px=p.x,py=p.y;
+  const th=Math.max(10,EC.width*0.022),cx=EC.width/2,cy=EC.height/2;
+  const sx=Math.abs(px-cx)<th,sy=Math.abs(py-cy)<th;
+  if(sx)px=cx;if(sy)py=cy;
+  if(sx||sy){buzz(12);lastSnap=true}else lastSnap=false;
+  txt={str:t,x:px,y:py,rot:0};txtDrag={mode:'move',dx:0,dy:0};drawTextPreview(sx,sy);
+  vlog('Text placed. Drag corners to resize, the round dot to rotate.');
   return}
  if(tool==='crop'){
   const h=crop?hitHandle(p):null;
@@ -973,7 +1083,25 @@ EO.onpointermove=e=>{
  if(tool==='text'){
   if(ptrMap.has(e.pointerId))ptrMap.set(e.pointerId,p);
   if(ptrMap.size>=2){updatePinch();return}
-  if(txtDrag&&txt){txt.x=p.x-txtDrag.dx;txt.y=p.y-txtDrag.dy;drawTextPreview()}
+  if(txtDrag&&txt){
+   if(txtDrag.mode==='rotate'){
+    txt.rot=snapRot(Math.atan2(p.y-txt.y,p.x-txt.x)-txtDrag.off);drawTextPreview()}
+   else if(txtDrag.mode==='scale'){
+    const d=Math.hypot(p.x-txt.x,p.y-txt.y);
+    setTxtSize(txtDrag.s0*(d/txtDrag.d0))}
+   else{
+    let nx=p.x-txtDrag.dx,ny=p.y-txtDrag.dy;
+    const th=Math.max(10,EC.width*0.022),cx=EC.width/2,cy=EC.height/2;
+    const sx=Math.abs(nx-cx)<th,sy=Math.abs(ny-cy)<th;
+    if(sx)nx=cx;if(sy)ny=cy;
+    const on=sx||sy;
+    if(on&&!lastSnap)buzz(12);
+    lastSnap=on;
+    txt.x=nx;txt.y=ny;drawTextPreview(sx,sy)}
+   return}
+  if(txt){
+   const hit=hitText(p);
+   EO.style.cursor=!hit?'crosshair':hit.kind==='move'?'move':hit.kind==='rotate'?'grab':'nwse-resize'}
   return}
  if(tool==='erase'){
   drawCursor(p);
@@ -991,6 +1119,7 @@ EO.onpointermove=e=>{
 EO.onpointerup=EO.onpointercancel=e=>{
  if(e&&ptrMap.has(e.pointerId))ptrMap.delete(e.pointerId);
  if(ptrMap.size<2)pinch=null;
+ lastSnap=false;
  if(ptrMap.size===0)txtBefore=null;
  erasing=false;cropDrag=null;strokePts=null;curStroke=null;panStart=null;txtDrag=null;
  if(tool==='text'){EO.style.cursor='crosshair';drawTextPreview();return}
