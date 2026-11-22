@@ -372,11 +372,7 @@ dialog::backdrop{background:rgba(4,6,10,.7);backdrop-filter:blur(4px)}
 <dialog id="dlgSettings">
   <div class="sheet">
     <h2>AI connection</h2>
-    <p class="sub">Add a key for the generative tools (AI erase, sketch to photo, backdrop, enhance). The eraser uses Nexscope's object eraser when a Nexscope key is set, otherwise the Google key. Everything else works offline.</p>
-    <div class="field">
-      <label>Nexscope key (object eraser, optional)</label>
-      <input type="password" id="inNx" placeholder="nk-..." autocomplete="off" spellcheck="false">
-    </div>
+    <p class="sub">The generative tools (AI erase, sketch to photo, backdrop, enhance) need one image model key. Everything else works offline.</p>
     <div class="field">
       <label>Google AI Studio key</label>
       <input type="password" id="inKey" placeholder="AIza..." autocomplete="off" spellcheck="false">
@@ -501,7 +497,6 @@ const S = {
   key: DB.get('vasuki.key3'),
   model: DB.get('vasuki.model3') || 'gemini-nano-banana-2.1',
   proxy: DB.get('vasuki.proxy3'),
-  nx: DB.get('vasuki.nx3'),
   mode: 'photo',              // photo | sketch
   tool: 'brush',
   size: 42,
@@ -1122,12 +1117,10 @@ function aiStatus(state, note) {
   if (state) S.aiState = state;
   const dot = $('#aiDot'), txt = $('#aiTxt');
   dot.className = 'dot';
-  if (!S.key && !S.proxy && !S.nx) { txt.textContent = 'AI off'; return; }
+  if (!S.key && !S.proxy) { txt.textContent = 'AI off'; return; }
   if (S.aiState === 'ready') { dot.classList.add('on'); txt.textContent = 'AI ready'; }
   else if (S.aiState === 'bad') { dot.classList.add('bad'); txt.textContent = 'AI error'; }
-  else if (S.proxy) { txt.textContent = 'Proxy set'; }
-  else if (S.key) { txt.textContent = 'Key set'; }
-  else { txt.textContent = 'Eraser key'; }
+  else { txt.textContent = S.proxy ? 'Proxy set' : 'Key set'; }
 }
 
 function httpError(status, msg) {
@@ -1362,56 +1355,10 @@ function featherBlendPatch(x0, y0, w, h, patch, feather) {
   ctxOf(base, true).drawImage(tmp, x0, y0);
 }
 
-/* ---------- Nexscope object eraser (needs their paid plan) ---------- */
-const FN_BASE = 'https://oryx-ffcb84e0.base44.app/functions';
-
-async function nexscopeErase() {
-  const long = Math.max(base.width, base.height);
-  const k = Math.min(1, 2048 / long);
-  const w = Math.round(base.width * k), h = Math.round(base.height * k);
-  const im = mkCanvas(w, h);
-  const ic = ctxOf(im, true);
-  ic.imageSmoothingQuality = 'high';
-  ic.drawImage(base, 0, 0, w, h);
-  const mk2 = mkCanvas(w, h);
-  const mc = ctxOf(mk2, true);
-  mc.fillStyle = '#000';
-  mc.fillRect(0, 0, w, h);
-  mc.drawImage(mask, 0, 0, w, h);
-
-  const res = await fetch(FN_BASE + '/studioAi', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      image: im.toDataURL('image/jpeg', 0.92),
-      mask: mk2.toDataURL('image/png'),
-      key: S.nx
-    })
-  });
-  const j = await res.json();
-  if (!j.ok) throw new Error(j.error || 'The object eraser failed');
-  return await loadImage(j.image);
-}
-
 async function aiErase() {
   if (!base) { toast('Open a photo first'); return; }
   const b = maskBounds();
   if (!b) { toast('Paint over the object you want gone'); return; }
-
-  if (S.nx) {
-    busy(true, 'Erasing', 'The object eraser is rebuilding what was behind it');
-    try {
-      const img = await nexscopeErase();
-      adoptImage(img);
-      toast('Object removed');
-      return;
-    } catch (e) {
-      toast(String((e && e.message) || e), 5200);
-    } finally {
-      busy(false);
-    }
-  }
-
   if (!S.key && !S.proxy) {
     toast('No AI key, so I used the offline fill. Add a key for real generative erase.');
     quickFill();
@@ -2116,8 +2063,7 @@ async function doSave() {
    SETTINGS
    ============================================================ */
 function openSettings(msg) {
-  $('#inKey').value = S.key || '';
-  if ($('#inNx')) $('#inNx').value = S.nx || '';
+  $('#inKey').value = S.key;
   $('#inModel').value = S.model;
   $('#inProxy').value = S.proxy;
   const d = $('#dlgSettings');
@@ -2133,15 +2079,13 @@ function saveSettings() {
   S.key = $('#inKey').value.trim();
   S.model = $('#inModel').value;
   S.proxy = $('#inProxy').value.trim();
-  S.nx = $('#inNx') ? $('#inNx').value.trim() : S.nx;
   DB.set('vasuki.key3', S.key);
-  DB.set('vasuki.nx3', S.nx || '');
   DB.set('vasuki.model3', S.model);
   DB.set('vasuki.proxy3', S.proxy);
   route = null; routeTried = [];
-  aiStatus(S.key || S.proxy || S.nx ? 'unknown' : 'nokey');
+  aiStatus(S.key || S.proxy ? 'unknown' : 'nokey');
   $('#dlgSettings').close();
-  toast(S.key || S.proxy || S.nx ? 'AI connection saved' : 'Key removed');
+  toast(S.key || S.proxy ? 'AI connection saved' : 'Key removed');
 }
 
 async function testAI() {
@@ -2492,7 +2436,7 @@ async function selfTest() {
 function boot() {
   bind();
   syncLabels();
-  aiStatus(S.key || S.proxy || S.nx ? 'unknown' : 'nokey');
+  aiStatus(S.key || S.proxy ? 'unknown' : 'nokey');
   setPanel('erase');
   refreshHistBtns();
   if (/selftest/.test(location.search)) { selfTest(); }
