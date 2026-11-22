@@ -1,152 +1,1129 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta charset="UTF-8">
-<title>spider web 🕸️#</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="Rqwi-3-UpxVOdW4MX78Aox2QsZPDscuWM3pxV-m6Npo">
+<meta name="google-site-verification" content="JhAbIEiEfRQizkh190gBbZDbxLkZn_6T1PKhqFr2-jg">
+<title>Vasuki APK Converter</title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #121212;
-    color: white;
-    font-family: Arial, sans-serif;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-.header {
-    background: #000;
-    border-bottom: 3px solid #e23636;
-    padding: 12px 15px;
-    text-align: center;
-    flex-shrink: 0;
-  }
-.header h1 { margin: 0; font-size: 22px; letter-spacing: 3px; color: #e23636; }
-.header small { color: #888; font-size: 11px; letter-spacing: 1px; }
-.urlbox { display: flex; padding: 10px; background: #1e1e1e; gap: 8px; flex-shrink: 0; }
-  #url { flex: 1; padding: 12px; font-size: 15px; background: #2a2a2a; color: white; border: 2px solid #333; border-radius: 10px; outline: none; }
-  #url:focus { border-color: #e23636; }
-  #gobtn { padding: 12px 25px; font-size: 16px; font-weight: bold; background: #e23636; color: white; border: none; border-radius: 10px; cursor: pointer; }
-  #gobtn:active { background: #b92b2b; }
-  #content { flex: 1; overflow: auto; background: white; }
-  #content iframe { width: 100%; height: 100%; border: none; }
-  #info {
-    background: #1a2a1a;
-    color: #aaffaa;
-    padding: 8px 12px;
-    font-size: 12px;
-    text-align: center;
-    display: none;
-  }
+:root{--bg:#f3efe6;--card:#fffdf8;--ink:#14231c;--mut:#5d6b63;--line:#d6cfbd;--g:#0f5c3a;--g2:#e1efe4;--gold:#c8962b;--err:#a8321f}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1a14;--card:#15251d;--ink:#e9f1ea;--mut:#9db0a4;--line:#2a3e33;--g:#5fd08d;--g2:#1d3629;--gold:#e0b04a;--err:#ff8f7c}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Georgia,"Times New Roman",serif;padding:16px;padding-top:max(16px,env(safe-area-inset-top));padding-bottom:max(24px,env(safe-area-inset-bottom))}
+main{max-width:640px;margin:0 auto}
+h1{font-size:2rem;line-height:1.1;margin:8px 0 4px;letter-spacing:-.5px}
+h1 span{color:var(--g)}
+.sub{color:var(--mut);margin:0 0 18px}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+h2{font-size:1.05rem;margin:0 0 10px}
+label{display:block;font-size:.88rem;color:var(--mut);margin:10px 0 4px;font-family:system-ui,sans-serif}
+input[type=text],input[type=url]{width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;padding:10px 4px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;font:600 14px system-ui,sans-serif;cursor:pointer}
+.tabs button.on{background:var(--g);color:#fff;border-color:var(--g)}
+.btn{padding:11px 14px;border:1px solid var(--g);background:var(--g2);color:var(--ink);border-radius:8px;font:600 14px system-ui,sans-serif;cursor:pointer}
+.btn.main{width:100%;background:var(--g);color:#fff;font-size:16px;padding:14px;margin-top:4px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pick{display:flex;gap:12px;align-items:center}
+.thumb{width:72px;height:72px;border-radius:16px;border:1px dashed var(--line);background:var(--bg) center/cover no-repeat;flex:none}
+.thumb.sp{width:54px;height:96px;border-radius:8px;background-size:contain}
+.colors{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+input[type=color]{width:100%;height:44px;border:1px solid var(--line);border-radius:8px;background:none;padding:2px}
+.hide{display:none}
+#log{font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;color:var(--mut);margin:10px 0 0}
+#log .e{color:var(--err)}
+.note{font:13px/1.5 system-ui,sans-serif;color:var(--mut);background:var(--g2);padding:10px 12px;border-radius:8px;border-left:3px solid var(--gold)}
+ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
+#cxtabs button{flex:1 1 45%}
+#ed{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:12px;padding-top:max(12px,env(safe-area-inset-top));padding-bottom:max(12px,env(safe-area-inset-bottom))}
+#ed.hide{display:none}
+#edstage{flex:1;min-height:180px;display:flex;overflow:auto;padding:4px}
+#edwrap{position:relative;display:block;flex:none;margin:auto;line-height:0;background:#fff;box-shadow:0 0 0 1px var(--line)}
+#ec{display:block}
+#eo{position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none}
+#ed .row.hide{display:none}
+#cRatio{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+#cRatio .btn{padding:8px 10px;font-size:13px}
+#cRatio .btn.on{background:var(--g);color:#fff;border-color:var(--g)}
+.btn.on{background:var(--g);color:#fff;border-color:var(--g)}
+.tag{font:600 12px system-ui,sans-serif;color:var(--mut);white-space:nowrap}
+#eMode .btn{flex:1;padding:9px 4px;font-size:13px}
+#edbody{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:2px}
+#edActions{flex:none;background:var(--bg);border-top:1px solid var(--line);padding-top:10px;gap:8px;flex-wrap:nowrap}
+#eo{cursor:crosshair}
 </style>
 </head>
 <body>
+<main>
+<h1>Vasuki <span>APK Converter</span></h1>
+<p class="sub">Turn an HTML file, a ZIP site or a web link into an APK with your own icon, splash screen and colours.</p>
 
-<div class="header">
-  <h1>spider web 🕸️#</h1>
-  <small>powered by vasuki H 91</small>
+<section>
+<h2>1. Source</h2>
+<div class="tabs" id="tabs">
+<button class="on" data-t="html">HTML file</button>
+<button data-t="zip">ZIP</button>
+<button data-t="url">URL</button>
 </div>
+<div id="p-html"><input type="file" id="fHtml" accept=".html,.htm,text/html"></div>
+<div id="p-zip" class="hide"><input type="file" id="fZip" accept=".zip,application/zip"><label>ZIP must contain an index.html (any folder depth).</label></div>
+<div id="p-url" class="hide"><input type="url" id="uUrl" placeholder="https://example.com"></div>
+</section>
 
-<div id="info"></div>
+<section>
+<h2>2. App details</h2>
+<label for="aName">App name</label>
+<input type="text" id="aName" value="My App">
+<label for="aPkg">Package name</label>
+<input type="text" id="aPkg" value="com.vasuki.myapp">
+</section>
 
-<div class="urlbox">
-  <input type="text" id="url" placeholder="https://example.com or https://vasuki.indv" inputmode="url">
-  <button id="gobtn" onclick="loadPage()">GO</button>
+<section>
+<h2>3. Permissions</h2>
+<label style="margin-top:0">Tick what your app's buttons need. The APK will declare these and ask the phone for them on first launch.</label>
+<div id="permGrid" style="display:grid;gap:8px;margin-top:8px;font:14px system-ui,sans-serif">
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="files" checked style="margin-top:2px"><span><b>Files &amp; downloads</b><br><span style="color:var(--mut);font-size:.85rem">Pick files, save downloads. Android's own file picker needs no permission on Android 10+.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="camera" checked style="margin-top:2px"><span><b>Camera</b><br><span style="color:var(--mut);font-size:.85rem">For "Take photo" buttons and camera preview.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="mic" style="margin-top:2px"><span><b>Microphone</b><br><span style="color:var(--mut);font-size:.85rem">For voice recording or audio input.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="location" style="margin-top:2px"><span><b>Location</b><br><span style="color:var(--mut);font-size:.85rem">For maps, nearby search or location buttons.</span></span></label>
+<label style="display:flex;gap:9px;align-items:flex-start;margin:0;color:var(--ink)"><input type="checkbox" value="notifications" style="margin-top:2px"><span><b>Notifications</b><br><span style="color:var(--mut);font-size:.85rem">For reminders and alerts (Android 13 and newer).</span></span></label>
 </div>
+<span class="note" style="display:block;margin-top:10px">Internet access is always added. The app asks only for what you tick here, and only when it is first opened.</span>
+</section>
 
-<div id="content">
-  <iframe id="screen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+<section>
+<h2>Venjix AI Logo Maker</h2>
+<label for="lp">Describe your logo</label>
+<input type="text" id="lp" placeholder="green snake coiled in a circle, minimal">
+<label for="lst">Style</label>
+<select id="lst" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif">
+<option value="glossy">Glossy 3D</option>
+<option value="neon">Neon glow</option>
+<option value="gradient">Modern gradient</option>
+<option value="mascot">Mascot</option>
+<option value="gold">Luxury gold</option>
+<option value="minimal">Minimal flat</option>
+</select>
+<div class="row" style="margin-top:10px"><button class="btn" id="lgen">Make logo</button></div>
+<span class="note" style="display:block;margin-top:8px">You get the picture only: no text, letters or watermarks. Any name you type is left out.</span>
+<div class="pick hide" id="lres" style="margin-top:10px"><div class="thumb" id="lprev"></div>
+<div class="row"><button class="btn" id="ledit">Edit</button>
+<button class="btn" id="luse">Use for icon and splash</button></div></div>
+</section>
+
+<section>
+<h2>4. App icon</h2>
+<div class="pick">
+<div class="thumb" id="iconPrev"></div>
+<div class="row">
+<button class="btn" onclick="iconFile.click()">From files</button>
+<button class="btn" onclick="iconCam.click()">Take photo</button>
+<button class="btn" id="edIcon">Edit logo</button>
 </div>
+</div>
+<input type="file" id="iconFile" accept="image/*" class="hide">
+<input type="file" id="iconCam" accept="image/*" capture="environment" class="hide">
+</section>
 
+<section>
+<h2>5. Splash screen</h2>
+<div class="pick">
+<div class="thumb sp" id="splPrev"></div>
+<div class="row">
+<button class="btn" onclick="splFile.click()">From files</button>
+<button class="btn" onclick="splCam.click()">Take photo</button>
+<button class="btn" id="toSpl">Logo to splash</button>
+<button class="btn" id="edSpl">Edit splash</button>
+</div>
+</div>
+<input type="file" id="splFile" accept="image/*" class="hide">
+<input type="file" id="splCam" accept="image/*" capture="environment" class="hide">
+<label>Only the logo shows, at a small size. The rest of the screen is filled with the splash colour.</label>
+</section>
+
+<section>
+<h2>6. Colours</h2>
+<div class="colors">
+<div><label for="cBar">Status bar</label><input type="color" id="cBar" value="#0f5c3a"></div>
+<div><label for="cSplash">Splash background</label><input type="color" id="cSplash" value="#ffffff"></div>
+<div><label for="cIcon">Icon background</label><input type="color" id="cIcon" value="#ffffff"></div>
+</div>
+</section>
+
+<section class="hide">
+<h2>7. Build account</h2>
+<p class="note">Python in this page packs your app, then a free GitHub account compiles the real APK. Use a repository used only for this tool, because its files are replaced on every build.</p>
+<label for="repo">Repository name</label>
+<input type="text" id="repo" value="vasuki-apk-builds">
+</section>
+<button class="btn main" id="go">Convert to APK</button>
+<pre id="log"></pre>
+<div id="res" class="hide"><a id="dl" class="btn main" style="display:block;text-align:center;text-decoration:none" href="#">Download APK</a></div>
+
+<section style="margin-top:14px">
+<h2>Codex</h2>
+<div class="tabs" id="cxtabs" style="flex-wrap:wrap">
+<button class="on" data-k="cpp">C++ code to HTML file</button>
+<button data-k="html">HTML code to HTML file</button>
+<button data-k="py">Python code to HTML file</button>
+<button data-k="cppf">C++ file to HTML file</button>
+<button data-k="pyf">Python file to HTML file</button>
+</div>
+<input type="file" id="cxfile" class="hide" accept=".cpp,.cc,.cxx,.h,.hpp,.txt" style="margin-bottom:8px">
+<textarea id="cxin" rows="8" placeholder="Paste your code here" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:13px ui-monospace,monospace"></textarea>
+<button class="btn main" id="cxrun">Convert to HTML file</button>
+<div id="cxres" class="hide">
+<textarea id="cxout" rows="6" readonly style="width:100%;margin-top:10px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:12px ui-monospace,monospace"></textarea>
+<div class="row" style="margin-top:8px"><button class="btn" id="cxdl">Download HTML</button><button class="btn" id="cxuse">Use as app source</button></div>
+</div>
+</section>
+</main>
+
+<footer style="max-width:640px;margin:0 auto 8px;padding:16px;text-align:center;border-top:1px solid var(--line);font-family:system-ui,sans-serif">
+<a id="vlink" href="https://vasukihomepage.netlify.app" target="_blank" rel="noopener noreferrer" style="display:block;padding:4px 0;color:inherit;text-decoration:none;-webkit-tap-highlight-color:rgba(15,92,58,.18)">
+<p style="margin:0 0 6px;font-size:.9rem;color:var(--mut)">Get touch with us through</p>
+<p style="margin:0 0 10px;font-size:1rem"><span style="color:var(--g);font-weight:600;text-decoration:underline;text-underline-offset:2px">vasukihomepage.netlify.app</span></p>
+<p style="margin:0;font-size:.85rem;color:var(--mut)">Made in India</p>
+</a>
+</footer>
 <script>
-  const urlInput = document.getElementById('url');
-  const screen = document.getElementById('screen');
-  const content = document.getElementById('content');
-  const info = document.getElementById('info');
-
-  // Local storage for your.indv sites
-  let indvSites = JSON.parse(localStorage.getItem('indvSites') || '{}');
-
-  window.onload = function() {
-    // Check if URL has.indv hash on startup
-    let hash = window.location.hash.replace('#', '');
-    if (hash && hash.endsWith('.indv')) {
-      loadIndvSite(hash);
-    } else {
-      loadNormalUrl('https://example.com');
-    }
-  }
-
-  function loadPage() {
-    let url = urlInput.value.trim();
-    if (!url) return;
-
-    // Handle.indv domains
-    if (url.toLowerCase().endsWith('.indv')) {
-      loadIndvSite(url.toLowerCase());
-      return;
-    }
-
-    // Handle normal URLs
-    if (!url.startsWith('http')) url = 'https://' + url;
-    loadNormalUrl(url);
-  }
-
-  function loadIndvSite(fullUrl) {
-    let domain = fullUrl.replace('https://', '').replace('http://', '').replace('.indv', '');
-
-    // If we have stored data for this domain
-    if (indvSites[domain]) {
-      loadDataUrl(indvSites[domain], domain);
-      return;
-    }
-
-    // First time - ask for data URL
-    let dataUrl = prompt(`No file loaded for ${domain}.indv yet.\n\nPaste your data:text/html... URL here:`);
-    
-    if (dataUrl && dataUrl.startsWith('data:text/html')) {
-      indvSites[domain] = dataUrl;
-      localStorage.setItem('indvSites', JSON.stringify(indvSites));
-      loadDataUrl(dataUrl, domain);
-    } else {
-      alert('Invalid data URL. Use vasuki_convert.html to generate it first.');
-      loadNormalUrl('https://example.com');
-    }
-  }
-
-  function loadDataUrl(dataUrl, domain) {
-    // IMPORTANT: Load data URL in main window to avoid CSP block
-    // But keep browser UI visible by using hash routing
-    window.location.hash = `#${domain}.indv`;
-    urlInput.value = `https://${domain}.indv`;
-    showInfo(`Loaded https://${domain}.indv`);
-    
-    // Replace iframe with direct HTML content
-    content.innerHTML = `<iframe id="screen" src="${dataUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="width:100%;height:100%;border:none;"></iframe>`;
-  }
-
-  function loadNormalUrl(url) {
-    window.location.hash = '';
-    urlInput.value = url;
-    hideInfo();
-    content.innerHTML = `<iframe id="screen" src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="width:100%;height:100%;border:none;"></iframe>`;
-  }
-
-  function showInfo(msg) {
-    info.textContent = msg;
-    info.style.display = 'block';
-    setTimeout(hideInfo, 3000);
-  }
-
-  function hideInfo() {
-    info.style.display = 'none';
-  }
-
-  urlInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') loadPage();
+(function(){
+  var a=document.getElementById('vlink'),URL_='https://vasukihomepage.netlify.app';
+  if(!a)return;
+  a.addEventListener('click',function(e){
+    var w=null;
+    try{w=window.open(URL_,'_blank')}catch(_){}
+    if(w){e.preventDefault();try{w.opener=null}catch(_){}return}
+    // popup blocked (common inside app previews/WebViews): leave the anchor alone
+    // so the browser's own navigation (target=_blank) handles it
   });
+})();
 </script>
 
+<div id="ed" class="hide">
+<div id="edbody">
+<div class="tabs" id="edtabs">
+<button data-e="crop">Crop</button><button data-e="rot">Rotate</button><button data-e="text">Text</button><button class="on" data-e="erase">Eraser</button>
+</div>
+<div id="edstage"><div id="edwrap"><canvas id="ec"></canvas><canvas id="eo"></canvas></div></div>
+<div id="c-crop" class="hide">
+<div id="cRatio"><button class="btn on" data-r="free">Free</button><button class="btn" data-r="1:1">1:1</button><button class="btn" data-r="4:5">4:5</button><button class="btn" data-r="3:2">3:2</button><button class="btn" data-r="16:9">16:9</button><button class="btn" data-r="9:16">9:16</button><button class="btn" data-r="orig">Original</button></div>
+<div class="row"><button class="btn" id="cApply">Apply crop</button><button class="btn" id="cReset">Reset</button></div>
+<span class="note" style="display:block;margin-top:8px">Drag a corner to resize, drag inside to move.</span>
+</div>
+<div id="c-rot" class="row hide"><button class="btn" id="rL">Rotate left</button><button class="btn" id="rR">Rotate right</button></div>
+<div id="c-text" class="hide">
+<div class="row"><input type="text" id="tTxt" placeholder="Your text" style="flex:1;min-width:120px;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"></div>
+<div class="row" style="margin-top:8px"><span class="tag">Top</span><input type="color" id="tCol" value="#ffffff" style="flex:1;min-width:52px;height:42px"><span class="tag">Bottom</span><input type="color" id="tCol2" value="#ffffff" style="flex:1;min-width:52px;height:42px"><button class="btn" id="tColSwap">Swap</button></div>
+<div class="row" style="margin-top:8px"><select id="tFill" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="solid">Normal colour</option><option value="glitter">Glitter</option></select></div>
+<div class="row" style="margin-top:8px"><select id="tFont" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="serif">Serif</option><option value="sans">Sans</option><option value="display">Display bold</option><option value="mono">Mono</option></select><select id="tOut" style="flex:1;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif"><option value="soft">Thin outline</option><option value="bold">Bold outline</option><option value="none">No outline (sharpest)</option></select></div>
+<div class="row" style="margin-top:8px"><button class="btn" id="tSmall">A- Small</button><input type="range" id="tSz" min="2" max="80" value="12" style="flex:1;min-width:90px"><button class="btn" id="tBig">A+ Large</button><span class="tag" id="tSzLbl">12%</span></div>
+<div class="row" style="margin-top:8px"><button class="btn main" id="tApply" style="flex:1;width:auto;margin:0">Add text</button><button class="btn" id="tStraight">Straighten</button><button class="btn" id="tDrop">Remove</button></div>
+<div class="note" style="margin-top:8px">Tap the picture to place the text. Drag the middle to move it, drag a corner dot to make it big or small, drag the round dot above to rotate it, or scroll and pinch. Then tap Add text.</div>
+</div>
+<div id="c-erase">
+<div class="tabs" id="eMode" style="margin-bottom:8px">
+<button class="on" data-m="fill">Photo fill</button><button data-m="ai">AI rebuild</button><button data-m="clear">Clear</button>
+</div>
+<div class="note" id="eHint">Paint over what you want gone, then tap Erase. That spot is rebuilt from the photo around it.</div>
+<div class="row" style="margin-top:8px"><span class="tag">Brush</span><input type="range" id="eSz" min="1" max="30" value="7" style="flex:1;min-width:110px"><span class="tag" id="eSzLbl">7</span></div>
+<div class="row" style="margin-top:6px"><span class="tag">Soft edge</span><input type="range" id="eSoft" min="0" max="100" value="35" style="flex:1;min-width:110px"><span class="tag" id="eSoftLbl">35</span></div>
+<div class="row" style="margin-top:8px"><button class="btn" id="eUndoStroke">Undo mark</button><button class="btn" id="eClearMask">Clear marks</button></div>
+<div class="row" style="margin-top:8px"><button class="btn main" id="eRun" style="flex:1;width:auto;margin:0">Erase</button></div>
+<div class="row" style="margin-top:8px"><button class="btn" id="ePeek">Compare</button><button class="btn" id="eZoomOut">-</button><span class="tag" id="eZoomLbl">100%</span><button class="btn" id="eZoomIn">+</button><button class="btn" id="ePan">Move</button></div>
+<div class="note" id="eStat" style="margin-top:8px">Photo fill ready</div>
+<div class="row" style="margin-top:8px;justify-content:space-between"><button class="btn" id="eKeyToggle">AI key</button><span class="tag" id="eKeyState">Off</span></div>
+<div id="eKeyBox" class="hide" style="margin-top:8px">
+<input type="password" id="eKey" placeholder="Gemini API key" autocomplete="off" spellcheck="false" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif">
+<div class="row" style="margin-top:8px"><button class="btn" id="eKeySave">Save key</button><button class="btn" id="eKeyDel">Remove key</button></div>
+<div class="note" style="margin-top:8px">The key stays on this device and is only sent to Google when you use AI rebuild. A saved key is never shown again, not even masked.</div>
+</div>
+</div>
+</div>
+<div class="row" id="edActions"><button class="btn" id="eUndo" style="flex:0 0 auto">Undo</button><button class="btn" id="eCancel" style="flex:1">Discard</button><button class="btn main" id="eSave" style="flex:1.6;width:auto;margin:0">Save logo</button></div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+/* Build engine (plain JavaScript, replaces the old Pyodide/Python packer) */
+const TPL={"JAVA": "package __PKG__;\n\nimport android.app.Activity;\nimport android.app.DownloadManager;\nimport android.content.ContentValues;\nimport android.content.Intent;\nimport android.content.pm.PackageManager;\nimport android.graphics.Color;\nimport android.net.Uri;\nimport android.os.Build;\nimport android.os.Bundle;\nimport android.os.Environment;\nimport android.os.Handler;\nimport android.provider.MediaStore;\nimport android.view.View;\nimport android.webkit.DownloadListener;\nimport android.webkit.GeolocationPermissions;\nimport android.webkit.PermissionRequest;\nimport android.webkit.URLUtil;\nimport android.webkit.ValueCallback;\nimport android.webkit.WebChromeClient;\nimport android.webkit.WebSettings;\nimport android.webkit.WebView;\nimport android.webkit.WebViewClient;\nimport android.widget.FrameLayout;\nimport android.widget.ImageView;\nimport android.widget.Toast;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class MainActivity extends Activity {\n  private static final int REQ_FILE = 1001;\n  private static final int REQ_CAM = 1002;\n  private static final int REQ_PERM = 1003;\n  private static final boolean CAM = __WANT_CAM__;\n  private static final boolean MIC = __WANT_MIC__;\n  private static final boolean FILES = __WANT_FILES__;\n  private static final boolean LOC = __WANT_LOC__;\n  private static final boolean NOTIF = __WANT_NOTIF__;\n\n  private WebView web;\n  private ValueCallback<Uri[]> fileCb;\n  private Uri camUri;\n\n  private List<String> needed() {\n    List<String> l = new ArrayList<String>();\n    if (CAM) {\n      l.add(android.Manifest.permission.CAMERA);\n      if (Build.VERSION.SDK_INT <= 28) l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);\n    }\n    if (MIC) l.add(android.Manifest.permission.RECORD_AUDIO);\n    if (LOC) {\n      l.add(android.Manifest.permission.ACCESS_FINE_LOCATION);\n      l.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);\n    }\n    if (NOTIF && Build.VERSION.SDK_INT >= 33) l.add(\"android.permission.POST_NOTIFICATIONS\");\n    if (FILES) {\n      if (Build.VERSION.SDK_INT >= 33) {\n        l.add(\"android.permission.READ_MEDIA_IMAGES\");\n        l.add(\"android.permission.READ_MEDIA_VIDEO\");\n      } else if (Build.VERSION.SDK_INT <= 28) {\n        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);\n        l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);\n      } else {\n        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);\n      }\n    }\n    return l;\n  }\n\n  private void askPerms() {\n    List<String> need = new ArrayList<String>();\n    for (String p : needed()) {\n      if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) need.add(p);\n    }\n    if (!need.isEmpty()) requestPermissions(need.toArray(new String[0]), REQ_PERM);\n  }\n\n  private void saveDownload(String url, String cd, String mime) {\n    try {\n      if (url == null || url.startsWith(\"blob:\") || url.startsWith(\"data:\")) {\n        Toast.makeText(this, \"This file is made inside the page and cannot be saved by the app. Use a web link instead.\", Toast.LENGTH_LONG).show();\n        return;\n      }\n      String name = URLUtil.guessFileName(url, cd, mime);\n      DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);\n      DownloadManager.Request rq = new DownloadManager.Request(Uri.parse(url));\n      rq.setTitle(name);\n      rq.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);\n      rq.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);\n      dm.enqueue(rq);\n      Toast.makeText(this, \"Downloading \" + name, Toast.LENGTH_SHORT).show();\n    } catch (Exception e) {\n      Toast.makeText(this, \"Could not start the download.\", Toast.LENGTH_SHORT).show();\n    }\n  }\n\n  @Override protected void onCreate(Bundle b) {\n    super.onCreate(b);\n    getWindow().setStatusBarColor(Color.parseColor(\"__BAR__\"));\n    FrameLayout root = new FrameLayout(this);\n    web = new WebView(this);\n    WebSettings s = web.getSettings();\n    s.setJavaScriptEnabled(true);\n    s.setDomStorageEnabled(true);\n    s.setAllowFileAccess(true);\n    s.setAllowContentAccess(true);\n    s.setMediaPlaybackRequiresUserGesture(false);\n    s.setGeolocationEnabled(__WANT_GEO__);\n    s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);\n    web.setWebViewClient(new WebViewClient());\n    web.setWebChromeClient(new WebChromeClient() {\n      @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {\n        if (fileCb != null) fileCb.onReceiveValue(null);\n        fileCb = cb;\n        boolean snap = CAM && p != null && p.isCaptureEnabled();\n        if (snap) {\n          try {\n            ContentValues cv = new ContentValues();\n            cv.put(MediaStore.Images.Media.DISPLAY_NAME, \"vasuki_\" + System.currentTimeMillis() + \".jpg\");\n            cv.put(MediaStore.Images.Media.MIME_TYPE, \"image/jpeg\");\n            camUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);\n            Intent ci = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);\n            ci.putExtra(MediaStore.EXTRA_OUTPUT, camUri);\n            startActivityForResult(ci, REQ_CAM);\n            return true;\n          } catch (Exception e) {\n            camUri = null;\n          }\n        }\n        Intent get = new Intent(Intent.ACTION_GET_CONTENT);\n        get.addCategory(Intent.CATEGORY_OPENABLE);\n        get.setType(\"*/*\");\n        if (p != null && p.getAcceptTypes() != null && p.getAcceptTypes().length > 0) {\n          String[] acc = p.getAcceptTypes();\n          if (acc.length == 1) {\n            String a = acc[0];\n            if (a.startsWith(\".\")) get.setType(\"*/*\"); else get.setType(a);\n          } else {\n            get.putExtra(Intent.EXTRA_MIME_TYPES, acc);\n          }\n        }\n        if (p != null && p.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) get.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);\n        try {\n          startActivityForResult(Intent.createChooser(get, \"Select file\"), REQ_FILE);\n        } catch (Exception e) {\n          if (fileCb != null) fileCb.onReceiveValue(null);\n          fileCb = null;\n          Toast.makeText(MainActivity.this, \"No file picker found on this phone.\", Toast.LENGTH_SHORT).show();\n        }\n        return true;\n      }\n      @Override public void onPermissionRequest(final PermissionRequest r) {\n        runOnUiThread(new Runnable() { public void run() {\n          List<String> ok = new ArrayList<String>();\n          for (String res : r.getResources()) {\n            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res) && CAM) ok.add(res);\n            else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && MIC) ok.add(res);\n          }\n          if (ok.isEmpty()) r.deny(); else r.grant(ok.toArray(new String[0]));\n        }});\n      }\n      @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback cb) {\n        cb.invoke(origin, LOC, false);\n      }\n    });\n    web.setDownloadListener(new DownloadListener() {\n      public void onDownloadStart(String url, String ua, String cd, String mime, long len) {\n        saveDownload(url, cd, mime);\n      }\n    });\n    root.addView(web);\n    final ImageView splash = new ImageView(this);\n    splash.setBackgroundColor(Color.parseColor(\"__SPLASHBG__\"));\n    splash.setImageResource(R.drawable.splash);\n    splash.setScaleType(ImageView.ScaleType.CENTER_INSIDE);\n    root.addView(splash, new FrameLayout.LayoutParams(-1, -1));\n    setContentView(root);\n    web.loadUrl(__URL__);\n    askPerms();\n    new Handler().postDelayed(new Runnable() { public void run() { splash.setVisibility(View.GONE); } }, 2000);\n  }\n\n  @Override protected void onActivityResult(int req, int res, Intent data) {\n    if (req == REQ_FILE || req == REQ_CAM) {\n      Uri[] out = null;\n      if (res == RESULT_OK) {\n        if (req == REQ_CAM) {\n          if (camUri != null) out = new Uri[]{camUri};\n        } else if (data != null) {\n          if (data.getClipData() != null) {\n            int n = data.getClipData().getItemCount();\n            out = new Uri[n];\n            for (int i = 0; i < n; i++) out[i] = data.getClipData().getItemAt(i).getUri();\n          } else if (data.getData() != null) {\n            out = new Uri[]{data.getData()};\n          }\n        }\n      }\n      if (fileCb != null) { fileCb.onReceiveValue(out); fileCb = null; }\n      camUri = null;\n      return;\n    }\n    super.onActivityResult(req, res, data);\n  }\n\n  @Override public void onBackPressed() {\n    if (web.canGoBack()) web.goBack(); else super.onBackPressed();\n  }\n}\n", "MANIFEST": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n__PERMS__\n  <queries>\n    <intent><action android:name=\"android.media.action.IMAGE_CAPTURE\"/><\/intent>\n    <intent><action android:name=\"android.intent.action.GET_CONTENT\"/><\/intent>\n  <\/queries>\n  <application android:label=__LABEL__ android:icon=\"@mipmap/ic_launcher\" android:usesCleartextTraffic=\"true\" android:theme=\"@android:style/Theme.Material.Light.NoActionBar\">\n    <activity android:name=\".MainActivity\" android:exported=\"true\" android:configChanges=\"orientation|screenSize|keyboardHidden\">\n      <intent-filter>\n        <action android:name=\"android.intent.action.MAIN\"/>\n        <category android:name=\"android.intent.category.LAUNCHER\"/>\n      <\/intent-filter>\n    <\/activity>\n  <\/application>\n<\/manifest>\n", "APP_GRADLE": "plugins { id 'com.android.application' }\nandroid {\n  namespace '__PKG__'\n  compileSdk 34\n  defaultConfig {\n    applicationId '__PKG__'\n    minSdk 24\n    targetSdk 34\n    versionCode 1\n    versionName '1.0'\n  }\n}\n", "SETTINGS": "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositories { google(); mavenCentral() } }\nrootProject.name = 'VasukiApp'\ninclude ':app'\n", "WORKFLOW": "name: Build APK\non:\n  push:\n  workflow_dispatch:\npermissions:\n  contents: write\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: 17\n      - run: |\n          yes | \"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager\" --licenses || true\n      - uses: gradle/actions/setup-gradle@v4\n        with:\n          gradle-version: 8.7\n      - run: gradle assembleDebug\n      - run: |\n          cp app/build/outputs/apk/debug/app-debug.apk app.apk\n          gh release create \"build-${GITHUB_SHA::7}\" app.apk --target \"$GITHUB_SHA\" --title \"APK ${GITHUB_SHA::7}\" --notes \"Built by Vasuki APK Converter\"\n        env:\n          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"};
+const enc=s=>new TextEncoder().encode(s);
+const unb64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
+const tob64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function quoteattr(s){
+ s=s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'&#10;').replace(/\r/g,'&#13;').replace(/\t/g,'&#9;');
+ if(s.indexOf('"')>=0){if(s.indexOf("'")>=0)return '"'+s.replace(/"/g,'&quot;')+'"';return "'"+s+"'"}
+ return '"'+s+'"'}
+function permBlock(perms){
+ const has=k=>perms.indexOf(k)>=0,L=[
+  '  <uses-permission android:name="android.permission.INTERNET"/>',
+  '  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>'];
+ if(has('files')||has('camera')){
+  L.push('  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>');
+  L.push('  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>')}
+ if(has('files')){
+  L.push('  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>');
+  L.push('  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>')}
+ if(has('camera')){
+  L.push('  <uses-permission android:name="android.permission.CAMERA"/>');
+  L.push('  <uses-feature android:name="android.hardware.camera" android:required="false"/>')}
+ if(has('mic')){
+  L.push('  <uses-permission android:name="android.permission.RECORD_AUDIO"/>');
+  L.push('  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>');
+  L.push('  <uses-feature android:name="android.hardware.microphone" android:required="false"/>')}
+ if(has('location')){
+  L.push('  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>');
+  L.push('  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>');
+  L.push('  <uses-feature android:name="android.hardware.location.gps" android:required="false"/>')}
+ if(has('notifications'))L.push('  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>');
+ return L.join('\n')}
+function loadImg(bytes){return new Promise((res,rej)=>{
+ const u=URL.createObjectURL(new Blob([bytes])),im=new Image();
+ im.onload=()=>{URL.revokeObjectURL(u);res(im)};
+ im.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('Could not read the icon or splash image.'))};
+ im.src=u})}
+function mkCanvas(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
+function renderImg(img,w,h,bg,cover){
+ let sw=img.naturalWidth||img.width,sh=img.naturalHeight||img.height;
+ const s=(cover?Math.max:Math.min)(w/sw,h/sh),rw=Math.max(1,Math.floor(sw*s)),rh=Math.max(1,Math.floor(sh*s));
+ let src=img;
+ while(sw/2>rw&&sh/2>rh){ /* halve step by step for smooth downscaling */
+  const nw=Math.max(rw,Math.floor(sw/2)),nh=Math.max(rh,Math.floor(sh/2)),c=mkCanvas(nw,nh),x=c.getContext('2d');
+  x.imageSmoothingEnabled=true;x.imageSmoothingQuality='high';x.drawImage(src,0,0,nw,nh);
+  src=c;sw=nw;sh=nh}
+ const out=mkCanvas(w,h),o=out.getContext('2d');
+ if(bg){o.fillStyle=bg;o.fillRect(0,0,w,h)}
+ o.imageSmoothingEnabled=true;o.imageSmoothingQuality='high';
+ o.drawImage(src,Math.floor((w-rw)/2),Math.floor((h-rh)/2),rw,rh);
+ return out}
+const toPng=c=>new Promise((res,rej)=>c.toBlob(b=>b?b.arrayBuffer().then(a=>res(new Uint8Array(a))):rej(new Error('Could not make the icon image.')),'image/png'));
+function defaultIcon(){
+ const c=mkCanvas(192,192),x=c.getContext('2d');
+ x.fillStyle='#0f5c3a';x.fillRect(0,0,192,192);x.fillStyle='#fff';x.beginPath();
+ [[46,50],[80,50],[96,112],[112,50],[146,50],[112,146],[80,146]].forEach((p,i)=>i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));
+ x.closePath();x.fill();return c}
+async function buildFiles(inp){
+ const pkg=inp.pkg,name=inp.name,mode=inp.mode,f={};let url;
+ if(mode==='html'){
+  if(!inp.html)throw new Error('Choose an HTML file first.');
+  f['app/src/main/assets/www/index.html']=unb64(inp.html);url='file:///android_asset/www/index.html'}
+ else if(mode==='zip'){
+  if(!inp.zip)throw new Error('Choose a ZIP file first.');
+  if(!window.JSZip)throw new Error('Could not load the ZIP reader. Check your connection and reload.');
+  let z;try{z=await JSZip.loadAsync(unb64(inp.zip))}catch(_){throw new Error('That ZIP file could not be opened.')}
+  const names=Object.keys(z.files).filter(n=>!n.startsWith('__MACOSX'));
+  const idx=names.filter(n=>/(^|\/)index\.html$/i.test(n)).sort((a,b)=>a.length-b.length);
+  if(!idx.length)throw new Error('No index.html found inside the ZIP.');
+  const prefix=idx[0].slice(0,idx[0].length-'index.html'.length);
+  for(const n of names){
+   const rel=n.slice(prefix.length);
+   if(n.endsWith('/')||!n.startsWith(prefix)||rel.split('/').indexOf('..')>=0||z.files[n].dir)continue;
+   f['app/src/main/assets/www/'+rel]=await z.files[n].async('uint8array')}
+  url='file:///android_asset/www/index.html'}
+ else{
+  url=inp.url.trim();
+  if(!/^https?:\/\/.+\..+/.test(url))throw new Error('Enter a full URL starting with http:// or https://')}
+ const icon=inp.icon?await loadImg(unb64(inp.icon)):defaultIcon();
+ const spl=inp.spl?await loadImg(unb64(inp.spl)):null;
+ const dens={mdpi:48,hdpi:72,xhdpi:96,xxhdpi:144,xxxhdpi:192};
+ for(const d in dens)f['app/src/main/res/mipmap-'+d+'/ic_launcher.png']=await toPng(renderImg(icon,dens[d],dens[d],inp.iconbg,true));
+ f['app/src/main/res/drawable-nodpi/splash.png']=await toPng(renderImg(spl||icon,512,512,null,false));
+ const ok=['files','camera','mic','location','notifications'],perms=(inp.perms||[]).filter(p=>ok.indexOf(p)>=0);
+ const has=k=>perms.indexOf(k)>=0?'true':'false';
+ const sub=t=>enc(t.split('__PKG__').join(pkg).split('__BAR__').join(inp.bar).split('__SPLASHBG__').join(inp.splash)
+  .split('__URL__').join(JSON.stringify(url)).split('__LABEL__').join(quoteattr(name))
+  .split('__PERMS__').join(permBlock(perms))
+  .split('__WANT_CAM__').join(has('camera')).split('__WANT_MIC__').join(has('mic'))
+  .split('__WANT_FILES__').join(has('files')).split('__WANT_LOC__').join(has('location'))
+  .split('__WANT_GEO__').join(has('location')).split('__WANT_NOTIF__').join(has('notifications')));
+ f['app/src/main/java/'+pkg.split('.').join('/')+'/MainActivity.java']=sub(TPL.JAVA);
+ f['app/src/main/AndroidManifest.xml']=sub(TPL.MANIFEST);
+ f['app/build.gradle']=sub(TPL.APP_GRADLE);
+ f['build.gradle']=enc("plugins { id 'com.android.application' version '8.5.2' apply false }\n");
+ f['settings.gradle']=enc(TPL.SETTINGS);
+ f['gradle.properties']=enc('org.gradle.jvmargs=-Xmx2g\nandroid.useAndroidX=true\n');
+ f['.github/workflows/build-apk.yml']=enc(TPL.WORKFLOW);
+ return f}
+async function gh(method,path,token,body){
+ let r;
+ try{r=await fetch('https://api.github.com'+path,{method:method,headers:{'Authorization':'Bearer '+token,'Accept':'application/vnd.github+json','Content-Type':'application/json'},body:body!==undefined?JSON.stringify(body):undefined})}
+ catch(_){throw new Error('Could not reach GitHub. Check your connection.')}
+ const t=await r.text();let j={};try{j=t?JSON.parse(t):{}}catch(_){}
+ return [r.status,j]}
+async function runBuild(inp){
+ const pkg=inp.pkg;
+ if(!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(pkg))throw new Error('Package name must look like com.vasuki.myapp');
+ for(const k of ['bar','splash','iconbg'])if(!/^#[0-9a-fA-F]{6}$/.test(inp[k]))throw new Error('Invalid colour value.');
+ const token=inp.token.trim(),repo=inp.repo.trim();
+ if(!token)throw new Error('Paste your GitHub token first.');
+ if(!/^[\w.-]+$/.test(repo))throw new Error('Repository name can only use letters, numbers, dot, dash, underscore.');
+ const files=await buildFiles(inp);
+ vlog('Packed '+Object.keys(files).length+' files.');
+ let [s,u]=await gh('GET','/user',token);
+ if(s!==200)throw new Error('GitHub rejected the token. It needs the repo and workflow permissions.');
+ const owner=u.login;
+ let info;[s,info]=await gh('GET','/repos/'+owner+'/'+repo,token);
+ if(s===404){
+  vlog('Creating repository '+repo+'...');
+  [s,info]=await gh('POST','/user/repos',token,{name:repo,auto_init:true,private:false});
+  if(s!==201)throw new Error('Could not create the repository.');
+  await sleep(3000)}
+ const br=info.default_branch||'main';
+ let ref;[s,ref]=await gh('GET','/repos/'+owner+'/'+repo+'/git/ref/heads/'+br,token);
+ if(s!==200)throw new Error('Could not read the repository branch.');
+ const parent=ref.object.sha;
+ vlog('Uploading files to GitHub...');
+ const tree=[],items=Object.entries(files);
+ const put=async(p,b)=>{
+  const [s2,d]=await gh('POST','/repos/'+owner+'/'+repo+'/git/blobs',token,{content:tob64(b),encoding:'base64'});
+  if(s2!==201)throw new Error('Upload failed for '+p);
+  tree.push({path:p,mode:'100644',type:'blob',sha:d.sha})};
+ for(let i=0;i<items.length;i+=6)await Promise.all(items.slice(i,i+6).map(e=>put(e[0],e[1])));
+ let t;[s,t]=await gh('POST','/repos/'+owner+'/'+repo+'/git/trees',token,{tree:tree});
+ if(s!==201)throw new Error('Could not create the file tree.');
+ let c;[s,c]=await gh('POST','/repos/'+owner+'/'+repo+'/git/commits',token,{message:'Build '+inp.name,tree:t.sha,parents:[parent]});
+ if(s!==201)throw new Error('Could not create the commit.');
+ [s]=await gh('PATCH','/repos/'+owner+'/'+repo+'/git/refs/heads/'+br,token,{sha:c.sha,force:true});
+ if(s!==200)throw new Error('Could not update the branch. Check the workflow permission on your token.');
+ const sha7=c.sha.slice(0,7);
+ vlog('Build started on GitHub. This takes about 3-5 minutes...');
+ for(let n=0;n<120;n++){
+  await sleep(10000);
+  let rel;[s,rel]=await gh('GET','/repos/'+owner+'/'+repo+'/releases/tags/build-'+sha7,token);
+  if(s===200&&rel.assets&&rel.assets.length){showResult(rel.assets[0].browser_download_url);vlog('APK is ready.');return}
+  let runs;[s,runs]=await gh('GET','/repos/'+owner+'/'+repo+'/actions/runs?head_sha='+c.sha,token);
+  for(const r of (runs.workflow_runs||[]))if(r.conclusion==='failure')throw new Error('The build failed. See the log: '+r.html_url);
+  if(n%3===2)vlog('Still building...')}
+ throw new Error('Build is taking too long. Check the Actions tab of your repository.')}
+</script>
+<script>
+const $=id=>document.getElementById(id);
+const _k='NTlTbUMxN3JkNVFJdHFmYnpQUDFieG1HNWRhTUVUQWczWVJsX3BoZw==';const tok=()=>atob(_k).split('').reverse().join('');
+let mode='html',iconF=null,splF=null,py=null;
+function vlog(m,e){$('log').innerHTML+=(e?'<span class="e">':'')+String(m).replace(/</g,'&lt;')+(e?'</span>':'')+'\n'}
+function showResult(u){const a=$('dl');a.href=u;$('res').classList.remove('hide')}
+$('tabs').onclick=e=>{const t=e.target.dataset.t;if(!t)return;mode=t;
+ [...$('tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+ ['html','zip','url'].forEach(k=>$('p-'+k).classList.toggle('hide',k!==t));};
+function bind(ids,set,prev){ids.forEach(id=>$(id).onchange=e=>{const f=e.target.files[0];if(!f)return;set(f);$(prev).style.backgroundImage='url('+URL.createObjectURL(f)+')'})}
+bind(['iconFile','iconCam'],f=>iconF=f,'iconPrev');
+bind(['splFile','splCam'],f=>splF=f,'splPrev');
+const b64=f=>!f?Promise.resolve(''):new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(f)});
+$('go').onclick=async()=>{
+ $('log').innerHTML='';$('res').classList.add('hide');$('go').disabled=true;
+ try{
+  const perms=[...document.querySelectorAll('#permGrid input[type=checkbox]')].filter(c=>c.checked).map(c=>c.value);
+  const inp={mode,perms,name:$('aName').value.trim()||'My App',pkg:$('aPkg').value.trim().toLowerCase(),
+   bar:$('cBar').value,splash:$('cSplash').value,iconbg:$('cIcon').value,url:$('uUrl').value,
+   html:await b64($('fHtml').files[0]||htmlF),zip:await b64($('fZip').files[0]),icon:await b64(iconF),spl:await b64(splF),
+   token:tok(),repo:$('repo').value};
+  await runBuild(inp);
+ }catch(e){vlog(String(e.message||e).split('\n').filter(l=>l&&!/^\s*File |Traceback|^\s+at /.test(l)).pop(),true)}
+ finally{$('go').disabled=false}
+};
+const _pk='TVhtUjY0SEN6TEhHTFc5NHF5b0JkMkVtb3A1cURIZEFfa3M=';
+const pk=()=>_pk?atob(_pk).split('').reverse().join(''):'';
+let htmlF=null,logoBlob=null,cxKind='cpp',genCode='';
+function cropMark(b){return new Promise(res=>{const i=new Image(),u=URL.createObjectURL(b);
+ i.onload=()=>{const n=Math.floor(Math.min(i.width,i.height)*0.88),c=document.createElement('canvas');c.width=c.height=n;
+  c.getContext('2d').drawImage(i,0,0,n,n,0,0,n,n);c.toBlob(x=>res(x||b),'image/png')};
+ i.onerror=()=>res(b);i.src=u})}
+function setIcon(f,u){iconF=f;$('iconPrev').style.backgroundImage='url('+u+')'}
+function setSpl(f,u){splF=f;$('splPrev').style.backgroundImage='url('+u+')'}
+$('toSpl').onclick=()=>{if(!iconF){vlog('Choose or make an app logo first.',true);return}setSpl(iconF,URL.createObjectURL(iconF));vlog('Logo set as splash.')};
+function noText(s){
+ return String(s)
+  .replace(/["\u201c\u2018][^"\u201d\u2019]{1,40}["\u201d\u2019]/g,' ')
+  .replace(/\b(called|named|titled|that says|with the (?:text|words?|name|title))\b[^,.;]*/gi,' ')
+  .replace(/\s{2,}/g,' ')
+  .replace(/^[\s,.;]+|[\s,.;]+$/g,'')}
+$('lgen').onclick=async()=>{
+ const p=$('lp').value.trim();if(!p){vlog('Describe your logo first.',true);return}
+ $('lgen').disabled=true;vlog('Making your logo...');
+ try{
+  const LS={glossy:'glossy 3D rendered app icon, soft studio lighting, depth, subtle reflections, vibrant gradient background',neon:'neon glowing logo, electric light trails, dark background, cyberpunk, luminous edges',gradient:'modern vector emblem, smooth vivid gradients, geometric, premium tech brand identity',mascot:'stylised mascot character logo, bold clean outlines, vivid colours, polished vector illustration',gold:'luxury emblem, metallic gold and deep emerald, embossed, elegant, high-end brand',minimal:'minimal flat logo, bold simple shape, two colours, perfectly balanced, negative space'};
+  const NT='picture only, no text of any kind, no letters, no words, no numbers, no typography, no captions, no labels, no brand names, no signage with writing, no signatures, no watermark';
+  const subj=noText(p);
+  const full='An image containing no text at all. '+(subj.length>=3?subj:'a simple abstract emblem')+', '+LS[$('lst').value]+', professional app icon artwork, ultra detailed, sharp focus, single centered subject with even padding, plain solid background, '+NT+', completely wordless and text-free';
+  const u='https://gen.pollinations.ai/image/'+encodeURIComponent(full)+'?width=1024&height=1024&model=flux&enhance=false&nologo=true&seed='+Math.floor(Math.random()*1e6)+(pk()?'&key='+pk():'');
+  const r=await fetch(u);if(!r.ok)throw new Error('The logo maker is busy. Try again in a moment.');
+  logoBlob=await cropMark(await r.blob());
+  $('lprev').style.backgroundImage='url('+URL.createObjectURL(logoBlob)+')';
+  $('lres').classList.remove('hide');vlog('Logo ready.');
+ }catch(e){vlog(e.message||'Could not reach the logo maker. Check your connection.',true)}
+ finally{$('lgen').disabled=false}
+};
+$('luse').onclick=()=>{const f=new File([logoBlob],'logo.png',{type:logoBlob.type||'image/png'});const u=URL.createObjectURL(f);setIcon(f,u);setSpl(f,u);vlog('Logo applied to icon and splash.')};
+
+$('cxtabs').onclick=e=>{const k=e.target.dataset.k;if(!k)return;cxKind=k;[...$('cxtabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+ const isF=k==='cppf'||k==='pyf';$('cxfile').classList.toggle('hide',!isF);$('cxin').classList.toggle('hide',isF);
+ $('cxfile').accept=k==='pyf'?'.py,.txt':'.cpp,.cc,.cxx,.h,.hpp,.txt';$('cxfile').value=''};
+function wrapHtml(c){
+ if(/<html[\s>]/i.test(c))return /<!doctype/i.test(c)?c:'<!DOCTYPE html>\n'+c;
+ const body=/<[a-z][\s\S]*>/i.test(c)?c:'<script>\n'+c+'\n<\/script>';
+ return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>App</title>\n</head>\n<body>\n'+body+'\n</body>\n</html>\n';
+}
+$('cxrun').onclick=async()=>{
+ const isF=cxKind==='cppf'||cxKind==='pyf',lang=cxKind.startsWith('cpp')?'C++':'Python';
+ const src=(isF?await ($('cxfile').files[0]||new Blob([''])).text():$('cxin').value).trim();
+ if(!src){vlog(isF?'Choose a code file first.':'Paste some code first.',true);return}
+ $('cxrun').disabled=true;$('cxres').classList.add('hide');
+ try{
+  if(cxKind==='html'){genCode=wrapHtml(src)}
+  else{
+   vlog('Converting '+lang+' to HTML...');
+   const sys='Convert the '+lang+' program into one complete, working, self-contained HTML file (HTML, CSS and JavaScript, no external libraries) that behaves like the program, with a clean mobile-friendly interface for any input and output. Reply with only the HTML file.';
+   const r=await fetch('https://gen.pollinations.ai/v1/chat/completions',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},pk()?{Authorization:'Bearer '+pk()}:{}),body:JSON.stringify({model:'openai',messages:[{role:'system',content:sys},{role:'user',content:src}]})});
+   if(!r.ok)throw new Error('The converter is busy. Try again in a moment.');
+   const j=await r.json();
+   let t=((j.choices||[{}])[0].message||{}).content||'';
+   t=t.replace(/^```(?:html)?\s*/i,'').replace(/```\s*$/,'').trim();
+   t=t.split('\n').filter(l=>!/pollinations/i.test(l)).join('\n');
+   const ce=t.toLowerCase().lastIndexOf('</html>');if(ce>0)t=t.slice(0,ce+7);
+   t=t.trim();
+   if(!/<html|<body|<script/i.test(t))throw new Error('The converter did not return an HTML file. Try again.');
+   genCode=wrapHtml(t);
+  }
+  $('cxout').value=genCode;$('cxres').classList.remove('hide');vlog('HTML file ready.');
+ }catch(e){vlog(e.message||'Conversion failed.',true)}
+ finally{$('cxrun').disabled=false}
+};
+$('cxdl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([genCode],{type:'text/html'}));a.download='index.html';document.body.appendChild(a);a.click();a.remove()};
+$('cxuse').onclick=()=>{htmlF=new File([genCode],'index.html',{type:'text/html'});$('fHtml').value='';document.querySelector('#tabs [data-t=html]').click();vlog('Codex file is now the app source. Tap Convert to APK.');scrollTo(0,0)};
+const EC=$('ec'),ECX=EC.getContext('2d'),EO=$('eo'),EOX=EO.getContext('2d');
+let hist=[],tool='erase',crop=null,ratio=0,origRatio=1,cropDrag=null,erasing=false,strokePts=null,edCb=null;
+let strokes=[],curStroke=null,zoom=1,fitScale=1,panMode=false,panStart=null,origSnap=null,peeking=false;
+let txt=null,txtDrag=null,pinch=null,ptrMap=new Map(),txtBefore=null;
+function clearOv(){EO.width=EC.width;EO.height=EC.height;EOX.clearRect(0,0,EO.width,EO.height)}
+function push(){const c=document.createElement('canvas');c.width=EC.width;c.height=EC.height;c.getContext('2d').drawImage(EC,0,0);hist.push(c);if(hist.length>8)hist.shift()}
+function pxScale(){const r=EO.getBoundingClientRect();return r.width?EC.width/r.width:1}
+function clampCrop(c){const W=EC.width,H=EC.height;
+ c.w=Math.min(Math.max(8,c.w),W);c.h=Math.min(Math.max(8,c.h),H);
+ c.x=Math.max(0,Math.min(W-c.w,c.x));c.y=Math.max(0,Math.min(H-c.h,c.y));return c}
+function fullCrop(){const W=EC.width,H=EC.height;let w=W,h=H;
+ if(ratio){if(w/h>ratio)w=h*ratio;else h=w/ratio}
+ return{x:(W-w)/2,y:(H-h)/2,w:w,h:h}}
+function fitRatio(){const W=EC.width,H=EC.height,c=crop||{x:0,y:0,w:W,h:H};let w=c.w,h=c.h;
+ if(ratio){h=w/ratio;if(h>H){h=H;w=h*ratio}if(w>W){w=W;h=w/ratio}}
+ const cx=c.x+c.w/2,cy=c.y+c.h/2;
+ return clampCrop({x:cx-w/2,y:cy-h/2,w:w,h:h})}
+const HDIR={nw:[-1,-1],n:[0,-1],ne:[1,-1],w:[-1,0],e:[1,0],sw:[-1,1],s:[0,1],se:[1,1]};
+function cropPoints(c){return{nw:[c.x,c.y],n:[c.x+c.w/2,c.y],ne:[c.x+c.w,c.y],w:[c.x,c.y+c.h/2],e:[c.x+c.w,c.y+c.h/2],sw:[c.x,c.y+c.h],s:[c.x+c.w/2,c.y+c.h],se:[c.x+c.w,c.y+c.h]}}
+function drawCrop(){
+ clearOv();if(!crop)return;
+ const W=EC.width,H=EC.height,c=crop,lw=Math.max(1,Math.round(W/500));
+ EOX.fillStyle='rgba(0,0,0,.55)';
+ EOX.fillRect(0,0,W,c.y);
+ EOX.fillRect(0,c.y+c.h,W,Math.max(0,H-(c.y+c.h)));
+ EOX.fillRect(0,c.y,c.x,c.h);
+ EOX.fillRect(c.x+c.w,c.y,Math.max(0,W-(c.x+c.w)),c.h);
+ EOX.strokeStyle='rgba(255,255,255,.45)';EOX.lineWidth=lw;
+ for(let i=1;i<3;i++){
+  EOX.beginPath();EOX.moveTo(c.x+c.w*i/3,c.y);EOX.lineTo(c.x+c.w*i/3,c.y+c.h);EOX.stroke();
+  EOX.beginPath();EOX.moveTo(c.x,c.y+c.h*i/3);EOX.lineTo(c.x+c.w,c.y+c.h*i/3);EOX.stroke()}
+ EOX.strokeStyle='#fff';EOX.lineWidth=Math.max(2,Math.round(W/400));
+ EOX.strokeRect(c.x+lw,c.y+lw,Math.max(1,c.w-2*lw),Math.max(1,c.h-2*lw));
+ const s=pxScale(),r=Math.max(7*s,Math.min(c.w,c.h)*0.06),pts=cropPoints(c);
+ EOX.fillStyle='#fff';EOX.strokeStyle='rgba(0,0,0,.4)';EOX.lineWidth=Math.max(1,2*s);
+ for(const k in pts){EOX.beginPath();EOX.arc(pts[k][0],pts[k][1],r,0,6.2832);EOX.fill();EOX.stroke()}
+}
+function hitHandle(p){
+ if(!crop)return null;
+ const s=pxScale(),r=Math.max(16*s,Math.min(crop.w,crop.h)*0.14),pts=cropPoints(crop);
+ for(const k in pts){if(Math.abs(p.x-pts[k][0])<=r&&Math.abs(p.y-pts[k][1])<=r)return k}
+ if(p.x>crop.x&&p.x<crop.x+crop.w&&p.y>crop.y&&p.y<crop.y+crop.h)return 'move';
+ return null}
+function newRect(a,b){
+ const W=EC.width,H=EC.height,minS=Math.max(8,Math.min(W,H)*0.04);
+ let w=Math.max(1,Math.abs(b.x-a.x)),h=Math.max(1,Math.abs(b.y-a.y));
+ if(ratio){if(w/h>ratio)h=w/ratio;else w=h*ratio}
+ if(w>W){h*=W/w;w=W}if(h>H){w*=H/h;h=H}
+ w=Math.max(minS,w);h=Math.max(minS,h);
+ if(ratio){if(w/h>ratio)w=h*ratio;else h=w/ratio}
+ let x=b.x<a.x?a.x-w:a.x,y=b.y<a.y?a.y-h:a.y;
+ return clampCrop({x:x,y:y,w:w,h:h})}
+function resizeCrop(hk,c0,p){
+ const W=EC.width,H=EC.height,minS=Math.max(8,Math.min(W,H)*0.04),d=HDIR[hk]||[0,0],dx=d[0],dy=d[1];
+ const ax=dx<0?c0.x+c0.w:c0.x,ay=dy<0?c0.y+c0.h:c0.y;
+ let w=dx===0?c0.w:Math.max(minS,Math.abs(p.x-ax));
+ let h=dy===0?c0.h:Math.max(minS,Math.abs(p.y-ay));
+ if(ratio){
+  if(dx===0)w=h*ratio;
+  else if(dy===0)h=w/ratio;
+  else if(w/h>ratio)h=w/ratio;else w=h*ratio}
+ if(w>W){h*=W/w;w=W}if(h>H){w*=H/h;h=H}
+ w=Math.max(minS,w);h=Math.max(minS,h);
+ if(ratio){if(dx===0)w=h*ratio;else if(dy===0)h=w/ratio;if(w>W){w=W;h=w/ratio}if(h>H){h=H;w=h*ratio}}
+ let x,y;
+ if(dx<0)x=ax-w;else if(dx>0)x=ax;else x=c0.x+(c0.w-w)/2;
+ if(dy<0)y=ay-h;else if(dy>0)y=ay;else y=c0.y+(c0.h-h)/2;
+ return clampCrop({x:x,y:y,w:w,h:h})}
+function setTool(t){
+ tool=t;cropDrag=null;erasing=false;strokePts=null;curStroke=null;panStart=null;
+ if(t!=='erase')maskReset();else{clearOv();if(maskPainted)drawCursor(null);refit()}
+ if(t==='text'){txt=null;txtDrag=null;pinch=null;ptrMap.clear();drawTextPreview()}else{ptrMap.clear();pinch=null;txtDrag=null}
+ [...$('edtabs').children].forEach(b=>b.classList.toggle('on',b.dataset.e===t));
+ ['crop','rot','text','erase'].forEach(k=>$('c-'+k).classList.toggle('hide',k!==t));
+ EO.style.cursor=t==='erase'?'crosshair':'default';
+ crop=(t==='crop')?fullCrop():null;
+ if(t==='crop')drawCrop()}
+$('edtabs').onclick=e=>{const t=e.target.dataset.e;if(t)setTool(t)};
+function openEd(blob,cb,bg){
+ const i=new Image();
+ i.onload=()=>{
+  let sw=i.width,sh=i.height;const mx=Math.max(sw,sh);let up=false;
+  if(mx<512&&mx>0){const u=512/mx;sw=Math.round(sw*u);sh=Math.round(sh*u);up=true}
+  const k=Math.min(1,2400/Math.max(sw,sh));
+  EC.width=Math.max(1,Math.round(sw*k));EC.height=Math.max(1,Math.round(sh*k));
+  ECX.imageSmoothingEnabled=true;ECX.imageSmoothingQuality='high';
+  ECX.clearRect(0,0,EC.width,EC.height);ECX.drawImage(i,0,0,EC.width,EC.height);
+  if(up)vlog('Picture was small, so it is enlarged to '+EC.width+' x '+EC.height+' px. Text stays sharp at icon size.');
+  $('edwrap').style.background=bg||'#ffffff';
+  maskReset();hist=[];edCb=cb;origRatio=EC.width/EC.height;setTool('erase');$('ed').classList.remove('hide');
+  origSnap=document.createElement('canvas');origSnap.width=EC.width;origSnap.height=EC.height;origSnap.getContext('2d').drawImage(EC,0,0);
+  zoom=1;panMode=false;$('ePan').classList.remove('on');$('ePan').textContent='Move';refit();showMode();keyState()};
+ i.onerror=()=>vlog('That image could not be opened.',true);
+ i.src=URL.createObjectURL(blob)}
+function closeEd(){$('ed').classList.add('hide')}
+const pos=e=>{const r=EC.getBoundingClientRect();return{x:(e.clientX-r.left)*EC.width/r.width,y:(e.clientY-r.top)*EC.height/r.height}};
+function brushSize(){const mn=Math.min(EC.width,EC.height);return Math.max(2,mn*Number($('eSz').value)/100)}
+function softPx(){const v=Number($('eSoft').value);if(!v)return 0;return Math.max(0.6,v/100*Math.max(4,brushSize()*0.9))}
+function fitScaleNow(){const st=$('edstage');const aw=Math.max(80,st.clientWidth-10),ah=Math.max(80,st.clientHeight-10);
+ return Math.min(aw/EC.width,ah/EC.height)}
+function applyZoom(){const w=Math.max(1,Math.round(EC.width*fitScale*zoom));
+ $('edwrap').style.width=w+'px';
+ EC.style.maxWidth='none';EC.style.maxHeight='none';EC.style.width='100%';EC.style.height='auto';
+ $('eZoomLbl').textContent=Math.round(zoom*100)+'%'}
+function refit(){if($('ed').classList.contains('hide'))return;fitScale=fitScaleNow();applyZoom()}
+function setZoom(z){zoom=Math.max(1,Math.min(6,z));applyZoom()}
+addEventListener('resize',()=>{if(!$('ed').classList.contains('hide')&&zoom===1)refit()});
+if(window.ResizeObserver){try{new ResizeObserver(()=>{if(!$('ed').classList.contains('hide')&&zoom===1)refit()}).observe($('edstage'))}catch(_){}}
+const EM=document.createElement('canvas'),EMX=EM.getContext('2d');
+let maskPainted=false;
+const cl=(v,a,b)=>v<a?a:v>b?b:v, lp=(a,b,t)=>a+(b-a)*t;
+function maskReset(){EM.width=EC.width;EM.height=EC.height;EMX.clearRect(0,0,EM.width,EM.height);maskPainted=false;strokes=[];curStroke=null;strokePts=null;clearOv()}
+function maskBounds(){if(!maskPainted)return null;
+ const d=EMX.getImageData(0,0,EM.width,EM.height).data;let x0=1e9,y0=1e9,x1=-1,y1=-1;
+ for(let y=0;y<EM.height;y++)for(let x=0;x<EM.width;x++){if(d[(y*EM.width+x)*4+3]>8){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}}
+ return x1<0?null:{x:x0,y:y0,w:x1-x0+1,h:y1-y0+1}}
+function drawStrokePath(pts,w){
+ if(!pts||!pts.length)return;
+ if(EM.width!==EC.width||EM.height!==EC.height){EM.width=EC.width;EM.height=EC.height}
+ EMX.save();EMX.strokeStyle='#fff';EMX.lineCap='round';EMX.lineJoin='round';EMX.lineWidth=w;
+ EMX.beginPath();EMX.moveTo(pts[0].x,pts[0].y);
+ if(pts.length===1)EMX.lineTo(pts[0].x+0.01,pts[0].y);
+ else for(let i=1;i<pts.length;i++)EMX.lineTo(pts[i].x,pts[i].y);
+ EMX.stroke();EMX.restore();maskPainted=true}
+function maskStroke(){if(!curStroke)return;drawStrokePath(curStroke.pts,curStroke.w)}
+function maskUndoStroke(){
+ if(!strokes.length){vlog('No marks to undo.',true);return}
+ strokes.pop();
+ EMX.clearRect(0,0,EM.width,EM.height);maskPainted=false;
+ for(const st of strokes)drawStrokePath(st.pts,st.w);
+ if(!maskPainted)clearOv();else drawCursor(null)}
+function maskFeather(px){
+ const f=document.createElement('canvas');f.width=EM.width;f.height=EM.height;
+ const fx=f.getContext('2d');
+ if(px>0){try{fx.filter='blur('+px.toFixed(1)+'px)'}catch(_){}}
+ fx.drawImage(EM,0,0);return f}
+function bilinear(a,w,h,fx,fy){
+ const x0=cl(Math.floor(fx),0,w-1),y0=cl(Math.floor(fy),0,h-1);
+ const x1=cl(x0+1,0,w-1),y1=cl(y0+1,0,h-1);
+ const tx=cl(fx-x0,0,1),ty=cl(fy-y0,0,1);
+ const p00=a[y0*w+x0],p10=a[y0*w+x1],p01=a[y1*w+x0],p11=a[y1*w+x1];
+ return (p00*(1-tx)+p10*tx)*(1-ty)+(p01*(1-tx)+p11*tx)*ty}
+function relaxLv(lv,passes){
+ const {w,h,r,g,b,k}=lv;
+ for(let p=0;p<passes;p++)for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const i=y*w+x;if(k[i]>0)continue;
+  let sr=0,sg=0,sb=0,n=0;
+  for(let dy=-1;dy<=1;dy++){const yy=y+dy;if(yy<0||yy>=h)continue;
+   for(let dx=-1;dx<=1;dx++){const xx=x+dx;if(xx<0||xx>=w)continue;if(!dx&&!dy)continue;
+    const j=yy*w+xx,wt=(dx&&dy)?0.7:1;sr+=r[j]*wt;sg+=g[j]*wt;sb+=b[j]*wt;n+=wt}}
+  if(n){r[i]=sr/n;g[i]=sg/n;b[i]=sb/n}}}
+function nearestKnown(w,h,m){
+ const INF=1e9,dist=new Float32Array(w*h).fill(INF),idx=new Int32Array(w*h).fill(-1);
+ for(let i=0;i<w*h;i++)if(!m[i]){dist[i]=0;idx[i]=i}
+ const rel=(i,j,c)=>{if(dist[j]+c<dist[i]){dist[i]=dist[j]+c;idx[i]=idx[j]}};
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){const i=y*w+x;
+  if(x>0)rel(i,i-1,1);if(y>0)rel(i,i-w,1);
+  if(x>0&&y>0)rel(i,i-w-1,1.41);if(x<w-1&&y>0)rel(i,i-w+1,1.41)}
+ for(let y=h-1;y>=0;y--)for(let x=w-1;x>=0;x--){const i=y*w+x;
+  if(x<w-1)rel(i,i+1,1);if(y<h-1)rel(i,i+w,1);
+  if(x<w-1&&y<h-1)rel(i,i+w+1,1.41);if(x>0&&y<h-1)rel(i,i+w-1,1.41)}
+ return {dist,idx}}
+function grainEstimate(d,w,h,m){
+ let sum=0,n=0;
+ for(let y=1;y<h-1;y+=2)for(let x=1;x<w-1;x+=2){const i=y*w+x;if(m[i])continue;
+  const a=(d[i*4]+d[i*4+1]+d[i*4+2])/3,bq=(d[(i+1)*4]+d[(i+1)*4+1]+d[(i+1)*4+2])/3;
+  sum+=Math.abs(a-bq);n++}
+ return cl((n?sum/n:2)*1.6,1,9)}
+function inpaintRegion(d,w,h,m){
+ const levels=[];let cw=w,ch=h;
+ let cur={r:new Float32Array(w*h),g:new Float32Array(w*h),b:new Float32Array(w*h),k:new Float32Array(w*h)};
+ for(let i=0;i<w*h;i++){cur.r[i]=d[i*4];cur.g[i]=d[i*4+1];cur.b[i]=d[i*4+2];cur.k[i]=m[i]?0:1}
+ levels.push({w:cw,h:ch,...cur});
+ while(Math.min(cw,ch)>12){
+  const nw=Math.max(1,cw>>1),nh=Math.max(1,ch>>1);
+  const nr=new Float32Array(nw*nh),ng=new Float32Array(nw*nh),nb=new Float32Array(nw*nh),nk=new Float32Array(nw*nh);
+  for(let y=0;y<nh;y++)for(let x=0;x<nw;x++){
+   let sr=0,sg=0,sb=0,cnt=0;
+   for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){
+    const px=Math.min(cw-1,x*2+dx),py=Math.min(ch-1,y*2+dy),i=py*cw+px;
+    if(cur.k[i]>0){sr+=cur.r[i];sg+=cur.g[i];sb+=cur.b[i];cnt++}}
+   const j=y*nw+x;
+   if(cnt){nr[j]=sr/cnt;ng[j]=sg/cnt;nb[j]=sb/cnt;nk[j]=1}else nk[j]=0}
+  cur={r:nr,g:ng,b:nb,k:nk};cw=nw;ch=nh;levels.push({w:cw,h:ch,...cur})}
+ const top=levels[levels.length-1];relaxLv(top,30);
+ for(let li=levels.length-2;li>=0;li--){
+  const lv=levels[li],up=levels[li+1];
+  for(let y=0;y<lv.h;y++)for(let x=0;x<lv.w;x++){
+   const i=y*lv.w+x;if(lv.k[i]>0)continue;
+   const fx=(x+0.5)/2-0.5,fy=(y+0.5)/2-0.5;
+   lv.r[i]=bilinear(up.r,up.w,up.h,fx,fy);lv.g[i]=bilinear(up.g,up.w,up.h,fx,fy);lv.b[i]=bilinear(up.b,up.w,up.h,fx,fy)}
+  relaxLv(lv,li===0?14:8)}
+ const fine=levels[0];
+ for(let i=0;i<w*h;i++){if(!m[i])continue;
+  d[i*4]=cl(fine.r[i],0,255);d[i*4+1]=cl(fine.g[i],0,255);d[i*4+2]=cl(fine.b[i],0,255);d[i*4+3]=255}
+ const near=nearestKnown(w,h,m);
+ for(let i=0;i<w*h;i++){if(!m[i])continue;
+  const j=near.idx[i];if(j<0)continue;
+  const t=cl((near.dist[i]-2)/30,0,1)*0.5;
+  d[i*4]=cl(lp(d[i*4],d[j*4],t),0,255);d[i*4+1]=cl(lp(d[i*4+1],d[j*4+1],t),0,255);d[i*4+2]=cl(lp(d[i*4+2],d[j*4+2],t),0,255);d[i*4+3]=255}
+ const noise=grainEstimate(d,w,h,m);
+ for(let i=0;i<w*h;i++){if(!m[i])continue;
+  const n=(Math.random()-0.5)*noise;
+  d[i*4]=cl(d[i*4]+n,0,255);d[i*4+1]=cl(d[i*4+1]+n,0,255);d[i*4+2]=cl(d[i*4+2]+n,0,255)}}
+function localFill(){
+ const b=maskBounds();if(!b)return false;
+ const W=EC.width,H=EC.height,pad=Math.max(24,Math.round(Math.min(W,H)*0.04));
+ const x0=Math.max(0,Math.round(b.x-pad)),y0=Math.max(0,Math.round(b.y-pad));
+ const x1=Math.min(W,Math.round(b.x+b.w+pad)),y1=Math.min(H,Math.round(b.y+b.h+pad));
+ const w=x1-x0,h=y1-y0;if(w<2||h<2)return false;
+ const img=ECX.getImageData(x0,y0,w,h),md=EMX.getImageData(x0,y0,w,h).data;
+ const m=new Uint8Array(w*h);let any=false;
+ for(let i=0;i<w*h;i++)if(md[i*4+3]>26){m[i]=1;any=true}
+ if(!any)return false;
+ inpaintRegion(img.data,w,h,m);
+ const soft=softPx();
+ if(soft>0){
+  const t=document.createElement('canvas');t.width=w;t.height=h;
+  const tx=t.getContext('2d');tx.putImageData(img,0,0);
+  tx.globalCompositeOperation='destination-in';
+  tx.drawImage(maskFeather(soft),x0,y0,w,h,0,0,w,h);
+  ECX.drawImage(t,x0,y0);
+ }else ECX.putImageData(img,x0,y0);
+ return true}
+const IMG_MODELS=['gemini-3.1-flash-image','gemini-2.5-flash-image','gemini-nano-banana-2.1','gemini-3-pro-image'];
+const b64Of=u=>u.slice(u.indexOf(',')+1);
+function findInline(j){
+ const cs=(j&&j.candidates)||[];
+ for(const c of cs){const ps=((c.content||{}).parts)||[];
+  for(const p of ps){const d=p.inlineData||p.inline_data;
+   if(d&&d.data)return {b64:d.data,mime:d.mimeType||d.mime_type||'image/png'}}}
+ return null}
+function savedModel(){try{return localStorage.getItem('vasuki.model3')||''}catch(_){return ''}}
+async function aiErase(){
+ const key=getKey();if(!key)return {ok:false,err:'no key'};
+ const imgB64=b64Of(EC.toDataURL('image/png'));
+ const mc=document.createElement('canvas');mc.width=EC.width;mc.height=EC.height;
+ const mx=mc.getContext('2d');mx.fillStyle='#000';mx.fillRect(0,0,mc.width,mc.height);mx.drawImage(EM,0,0);
+ const maskB64=b64Of(mc.toDataURL('image/png'));
+ const prompt='Image 1 is a photo. Image 2 is a mask: the white area marks what must be removed. Remove everything under the white area and rebuild that area so it blends naturally with the surroundings. Keep every other part of the photo exactly as it is. Add no text, letters, numbers, logos or watermarks. Return only the edited photo.';
+ const models=[savedModel()].concat(IMG_MODELS).filter((m,i,a)=>m&&a.indexOf(m)===i);
+ let last='';
+ for(const model of models){
+  for(const modal of [true,false]){
+   const parts=[{text:prompt},
+    {inline_data:{mime_type:'image/png',data:imgB64}},
+    {inline_data:{mime_type:'image/png',data:maskB64}}];
+   const body={contents:[{role:'user',parts}]};
+   if(modal)body.generationConfig={responseModalities:['TEXT','IMAGE'],temperature:1};
+   try{
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),45000);
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{
+     method:'POST',signal:ctl.signal,
+     headers:{'Content-Type':'application/json','x-goog-api-key':key},
+     body:JSON.stringify(body)});
+    clearTimeout(to);
+    if(!r.ok){
+     let t='';try{t=await r.text()}catch(_){}
+     last='HTTP '+r.status;
+     if(r.status===401||r.status===403||/api key|permission|unauthenticated/i.test(t))return {ok:false,err:last};
+     continue}
+    const got=findInline(await r.json());
+    if(!got){last='no image returned';continue}
+    await new Promise((res,rej)=>{const im=new Image();
+     im.onload=()=>{ECX.clearRect(0,0,EC.width,EC.height);ECX.drawImage(im,0,0,EC.width,EC.height);res()};
+     im.onerror=()=>rej(new Error('bad image'));im.src='data:'+got.mime+';base64,'+got.b64});
+    return {ok:true};
+   }catch(e){last=e&&e.name==='AbortError'?'timed out':((e&&e.message)||'failed')}
+  }
+ }
+ return {ok:false,err:last}}
+const EKEY='vasuki.key3';
+function getKey(){let t='';try{t=($('eKey').value||'').trim()}catch(_){}
+ if(t)return t;try{return (localStorage.getItem(EKEY)||'').trim()}catch(_){return ''}}
+function eModeOn(){const b=$('eMode').querySelector('.on');return b?b.dataset.m:'fill'}
+function showMode(){
+ const m=eModeOn(),has=!!getKey();
+ $('eHint').textContent=m==='ai'
+  ?(has?'Paint over what you want gone, then tap Erase. AI rebuilds that spot to match the photo.':'AI rebuild needs a Gemini key. Add one below, or use Photo fill.')
+  :m==='clear'
+  ?'Paint over what you want gone, then tap Erase. That area becomes transparent, so the icon or splash colour shows through.'
+  :'Paint over what you want gone, then tap Erase. That spot is rebuilt from the photo around it.';
+ $('eStat').textContent=m==='ai'?(has?'AI rebuild ready':'AI key needed'):m==='clear'?'Clear mode ready':'Photo fill ready'}
+function keyState(){
+ const k=getKey();
+ $('eKeyState').textContent=k?'AI on':'Off';
+ $('eKeyState').style.color=k?'var(--g)':'var(--mut)';
+ $('eKey').placeholder=k?'Key saved on this device - type a new one to replace':'Gemini API key';
+ $('eKeyDel').classList.toggle('hide',!k);
+ showMode()}
+function hideKeyBox(){$('eKeyBox').classList.add('hide');$('eKeyToggle').textContent='AI key'}
+$('eKeyToggle').onclick=()=>{
+ const box=$('eKeyBox');box.classList.toggle('hide');
+ $('eKeyToggle').textContent=box.classList.contains('hide')?'AI key':'Close';
+ if(!box.classList.contains('hide'))$('eKey').focus()};
+$('eKeySave').onclick=()=>{
+ const v=($('eKey').value||'').trim();
+ if(!v){vlog('Type the key first.',true);return}
+ try{localStorage.setItem(EKEY,v)}catch(_){}
+ $('eKey').value='';hideKeyBox();keyState();vlog('AI key saved on this device. It stays hidden from now on.')};
+$('eKeyDel').onclick=()=>{try{localStorage.removeItem(EKEY)}catch(_){}
+ $('eKey').value='';keyState();vlog('AI key removed from this device.')};
+$('eMode').onclick=e=>{const m=e.target.dataset.m;if(!m)return;
+ [...$('eMode').children].forEach(b=>b.classList.toggle('on',b.dataset.m===m));showMode()};
+$('eSz').oninput=()=>{$('eSzLbl').textContent=$('eSz').value;drawCursor(null)};
+$('eSoft').oninput=()=>{$('eSoftLbl').textContent=$('eSoft').value};
+$('eZoomIn').onclick=()=>setZoom(zoom*1.5);
+$('eZoomOut').onclick=()=>setZoom(zoom/1.5);
+$('ePan').onclick=()=>{panMode=!panMode;$('ePan').classList.toggle('on',panMode);
+ $('ePan').textContent=panMode?'Move on':'Move';
+ EO.style.cursor=panMode?'grab':(tool==='erase'?'crosshair':'default')};
+$('eUndoStroke').onclick=maskUndoStroke;
+$('eClearMask').onclick=()=>{if(!maskPainted&&!strokes.length){vlog('Nothing marked yet.',true);return}maskReset()};
+const peekOn=()=>{if(!EC.width)return;const src=hist.length?hist[hist.length-1]:origSnap;if(!src)return;
+ peeking=true;clearOv();EOX.drawImage(src,0,0,EC.width,EC.height)};
+const peekOff=()=>{if(!peeking)return;peeking=false;clearOv();if(tool==='erase')drawCursor(null)};
+$('ePeek').addEventListener('pointerdown',e=>{e.preventDefault();peekOn()});
+$('ePeek').addEventListener('pointerup',peekOff);
+$('ePeek').addEventListener('pointercancel',peekOff);
+$('ePeek').addEventListener('pointerleave',peekOff);
+function startPinch(){
+ const v=[...ptrMap.values()];if(v.length<2)return;
+ const d=Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y);
+ if(!d)return;
+ if(txtBefore&&txtBefore.x!=null&&txtBefore.str){txt={str:txtBefore.str,x:txtBefore.x,y:txtBefore.y};txtDrag=null;drawTextPreview()}
+ txtBefore=null;
+ pinch={d:d,sz:Number($('tSz').value),ang:Math.atan2(v[1].y-v[0].y,v[1].x-v[0].x),rot:txt?(txt.rot||0):0}}
+function updatePinch(){
+ const v=[...ptrMap.values()];if(!pinch||v.length<2)return;
+ const d=Math.hypot(v[0].x-v[1].x,v[0].y-v[1].y);
+ if(!pinch.d)return;
+ setTxtSize(pinch.sz*d/pinch.d);
+ if(txt){const a=Math.atan2(v[1].y-v[0].y,v[1].x-v[0].x);
+  txt.rot=snapRot(pinch.rot+(a-pinch.ang));drawTextPreview()}}
+$('tSz').oninput=()=>{$('tSzLbl').textContent=$('tSz').value+'%';drawTextPreview()};
+$('tSmall').onclick=()=>setTxtSize(Number($('tSz').value)-4);
+$('tBig').onclick=()=>setTxtSize(Number($('tSz').value)+4);
+$('tTxt').oninput=()=>{const v=$('tTxt').value;if(txt){txt.str=v.trim();drawTextPreview()}};
+$('tCol').oninput=()=>drawTextPreview();
+$('tFont').onchange=()=>drawTextPreview();
+$('tFill').onchange=()=>drawTextPreview();
+$('tCol2').oninput=()=>drawTextPreview();
+$('tColSwap').onclick=()=>{const a=$('tCol').value,b=$('tCol2').value;$('tCol').value=b;$('tCol2').value=a;drawTextPreview()};
+$('tOut').onchange=()=>drawTextPreview();
+$('tApply').onclick=()=>{if(applyText())vlog('Text added to the picture.')};
+$('tStraight').onclick=()=>{if(!txt){vlog('Place the text first.',true);return}
+ txt.rot=0;drawTextPreview();vlog('Text straightened.')};
+$('tDrop').onclick=()=>{if(!txt){vlog('No text on the picture yet.',true);return}txt=null;clearOv();vlog('Text removed. Tap the picture to place it again.')};
+EO.addEventListener('wheel',e=>{if(tool!=='text')return;e.preventDefault();setTxtSize(Number($('tSz').value)+(e.deltaY<0?2:-2))},{passive:false});
+$('tSzLbl').textContent=$('tSz').value+'%';
+keyState();showMode();
+function clearMode(){
+ const soft=softPx();
+ ECX.save();ECX.globalCompositeOperation='destination-out';
+ ECX.drawImage(soft>0?maskFeather(soft):EM,0,0);
+ ECX.restore()}
+$('eRun').onclick=async()=>{
+ if(!maskBounds()){vlog('Paint over the object you want gone first.',true);return}
+ const m=eModeOn(),b=$('eRun'),lbl=b.textContent;
+ push();b.disabled=true;b.textContent='Working...';
+ $('eStat').textContent=m==='ai'?'AI is rebuilding the spot...':'Rebuilding the spot from the photo...';
+ await new Promise(r=>setTimeout(r,30));
+ let done=false,msg='';
+ if(m==='clear'){clearMode();done=true;msg='Area cleared. The gap takes the icon or splash colour.'}
+ else{
+  if(m==='ai'){
+   if(!getKey())msg='No AI key saved, filled from the photo instead.';
+   else{const r=await aiErase();
+    if(r.ok){done=true;msg='Object removed with AI.'}
+    else msg='AI could not be used ('+r.err+'), filled from the photo instead.'}}
+  if(!done){done=localFill();if(done&&!msg)msg='Filled from the photo.'}}
+ maskReset();b.disabled=false;b.textContent=lbl;showMode();
+ if(done)vlog(msg);else vlog('Nothing was marked there.',true)};
+function txtSize(){return Math.max(6,Math.round(Math.min(EC.width,EC.height)*Number($('tSz').value)/100))}
+const FONTS={serif:'Georgia, "Times New Roman", serif',sans:'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',display:'"Arial Black", Impact, system-ui, sans-serif',mono:'ui-monospace, SFMono-Regular, Menlo, monospace'};
+function txtFont(size){const f=FONTS[$('tFont').value]||FONTS.serif;return 'bold '+size+'px '+f}
+function txtOutline(size){
+ const v=$('tOut').value;
+ if(v==='none')return null;
+ if(v==='bold')return {c:'rgba(0,0,0,.92)',w:Math.max(3,size/9)};
+ return {c:'rgba(0,0,0,.82)',w:Math.max(1.5,size/16)}}
+function rndGen(seed){let x=seed||7;return function(){x=(x*1103515245+12345)&0x7fffffff;return x/0x7fffffff}}
+function hx(c){c=(c||'#ffffff').replace('#','');if(c.length===3)c=c[0]+c[0]+c[1]+c[1]+c[2]+c[2];
+ return [parseInt(c.slice(0,2),16)||0,parseInt(c.slice(2,4),16)||0,parseInt(c.slice(4,6),16)||0]}
+function mixCol(a,b,t){const p=hx(a),q=hx(b);
+ return 'rgb('+Math.round(p[0]+(q[0]-p[0])*t)+','+Math.round(p[1]+(q[1]-p[1])*t)+','+Math.round(p[2]+(q[2]-p[2])*t)+')'}
+function paintGlitter(ctx,str,size,c1,c2){
+ const w=Math.max(4,Math.ceil(txtWidth(str,size))),h=Math.max(4,Math.ceil(size*1.5));
+ const t=document.createElement('canvas');t.width=w;t.height=h;
+ const tx=t.getContext('2d');
+ tx.font=txtFont(size);tx.textAlign='center';tx.textBaseline='middle';
+ tx.fillStyle='#ffffff';tx.fillText(str,w/2,h/2);
+ tx.globalCompositeOperation='source-in';
+ const g=tx.createLinearGradient(0,0,0,h);
+ g.addColorStop(0,c1);g.addColorStop(1,c2);
+ tx.fillStyle=g;tx.fillRect(0,0,w,h);
+ tx.globalCompositeOperation='source-atop';
+ const rand=rndGen(97+str.length*13),n=Math.min(460,Math.max(16,Math.round(w*h/650)));
+ const light1=mixCol(c1,'#ffffff',0.82),light2=mixCol(c2,'#ffffff',0.82);
+ const dark1=mixCol(c1,'#000000',0.42),dark2=mixCol(c2,'#000000',0.42);
+ for(let i=0;i<n;i++){
+  const r=Math.max(0.5,size*(0.010+rand()*0.030));
+  const y=rand()*h,k=y/h;
+  const light=rand()<0.62;
+  tx.beginPath();tx.arc(rand()*w,y,r,0,6.2832);
+  tx.globalAlpha=(light?0.35+rand()*0.55:0.22+rand()*0.40);
+  tx.fillStyle=light?(k<0.5?light1:light2):(k<0.5?dark1:dark2);
+  tx.fill()}
+ tx.globalAlpha=1;
+ ctx.drawImage(t,-w/2,-h/2)}
+function paintText(ctx,str,x,y,size,col,rot,fill,c2){
+ ctx.save();ctx.translate(x,y);if(rot)ctx.rotate(rot);
+ ctx.font=txtFont(size);ctx.textAlign='center';ctx.textBaseline='middle';
+ try{ctx.textRendering='geometricPrecision'}catch(_){}
+ ctx.lineJoin='round';ctx.lineCap='round';
+ const o=txtOutline(size);
+ if(o){ctx.lineWidth=o.w;ctx.strokeStyle=o.c;ctx.strokeText(str,0,0)}
+ if(fill==='glitter')paintGlitter(ctx,str,size,col,c2||col);
+ else{
+  const g=ctx.createLinearGradient(0,-size*0.62,0,size*0.62);
+  g.addColorStop(0,col);g.addColorStop(1,c2||col);
+  ctx.fillStyle=g;ctx.fillText(str,0,0)}
+ ctx.restore()}
+function handleR(){return Math.max(4,Math.round(EC.width*0.009))}
+function touchR(){return Math.max(18,Math.round(EC.width*0.045))}
+let lastSnap=false;
+function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms)}catch(_){}}
+function txtGeom(){
+ const str=txt.str||'';
+ const size=txtSize(),w=Math.max(1,txtWidth(str,size)),h=size*1.25,rot=txt.rot||0;
+ const c=Math.cos(rot),sn=Math.sin(rot);
+ const pt=(dx,dy)=>({x:txt.x+dx*c-dy*sn,y:txt.y+dx*sn+dy*c});
+ const hw=w/2+size*0.16,hh=h/2+size*0.12;
+ const top=pt(0,-hh-Math.max(handleR()*3,size*0.55));
+ return {size:size,w:w,h:h,hw:hw,hh:hh,rot:rot,
+  corners:[pt(-hw,-hh),pt(hw,-hh),pt(hw,hh),pt(-hw,hh)],
+  top:pt(0,-hh),rotHandle:top}}
+function localPt(g,p){const c=Math.cos(-g.rot),sn=Math.sin(-g.rot),dx=p.x-g.cx,dy=p.y-g.cy;
+ return {x:dx*c-dy*sn,y:dx*sn+dy*c}}
+function hitText(p){
+ if(!txt)return null;
+ const g=txtGeom(),r=touchR();
+ if(Math.hypot(p.x-g.rotHandle.x,p.y-g.rotHandle.y)<=r)return {kind:'rotate',g:g};
+ for(let i=0;i<4;i++){const c=g.corners[i];
+  if(Math.hypot(p.x-c.x,p.y-c.y)<=r)return {kind:'scale',g:g,i:i}}
+ const lp=localPt({rot:g.rot,cx:txt.x,cy:txt.y},p);
+ if(Math.abs(lp.x)<=g.hw&&Math.abs(lp.y)<=g.hh)return {kind:'move',g:g};
+ return null}
+function snapRot(a){
+ const step=Math.PI/12,t=Math.round(a/step)*step;
+ return Math.abs(a-t)<0.07?t:a}
+function txtWidth(str,size){ECX.save();ECX.font=txtFont(size);const w=ECX.measureText(str).width;ECX.restore();return w}
+function drawGuides(sx,sy){
+ const lw=Math.max(1,EC.width/500),cx=EC.width/2,cy=EC.height/2;
+ const dash=Math.max(7,EC.width*0.012),gap=Math.max(6,EC.width*0.009);
+ EOX.save();
+ EOX.setLineDash([dash,gap]);EOX.lineWidth=lw*1.6;EOX.strokeStyle='rgba(255,255,255,.32)';
+ EOX.beginPath();EOX.moveTo(cx,0);EOX.lineTo(cx,EC.height);EOX.moveTo(0,cy);EOX.lineTo(EC.width,cy);EOX.stroke();
+ EOX.setLineDash([]);EOX.lineWidth=lw*2.6;
+ if(sx){EOX.strokeStyle='rgba(255,214,102,.95)';EOX.beginPath();EOX.moveTo(cx,0);EOX.lineTo(cx,EC.height);EOX.stroke()}
+ if(sy){EOX.strokeStyle='rgba(255,214,102,.95)';EOX.beginPath();EOX.moveTo(0,cy);EOX.lineTo(EC.width,cy);EOX.stroke()}
+ EOX.restore()}
+function drawTextPreview(sx,sy){
+ if(tool!=='text')return;
+ clearOv();
+ drawGuides(sx,sy);
+ if(!txt||!txt.str)return;
+ const size=txtSize(),str=txt.str;
+ paintText(EOX,str,txt.x,txt.y,size,$('tCol').value,txt.rot||0,$('tFill').value,$('tCol2').value);
+ const g=txtGeom(),lw=Math.max(1,EC.width/500),r=handleR();
+ EOX.save();
+ EOX.beginPath();
+ EOX.moveTo(g.corners[0].x,g.corners[0].y);
+ for(let i=1;i<4;i++)EOX.lineTo(g.corners[i].x,g.corners[i].y);
+ EOX.closePath();
+ EOX.setLineDash([8,6]);EOX.lineWidth=lw*2.4;EOX.strokeStyle='rgba(0,0,0,.45)';EOX.stroke();
+ EOX.setLineDash([]);EOX.lineWidth=lw*1.2;EOX.strokeStyle='rgba(255,255,255,.95)';EOX.stroke();
+ EOX.beginPath();EOX.moveTo(g.top.x,g.top.y);EOX.lineTo(g.rotHandle.x,g.rotHandle.y);
+ EOX.lineWidth=lw*1.2;EOX.strokeStyle='rgba(255,255,255,.95)';EOX.stroke();
+ for(const c of g.corners){
+  EOX.beginPath();EOX.arc(c.x,c.y,r,0,6.2832);
+  EOX.fillStyle='#ffffff';EOX.fill();EOX.lineWidth=lw*1.1;EOX.strokeStyle='rgba(15,92,58,.9)';EOX.stroke()}
+ EOX.beginPath();EOX.arc(g.rotHandle.x,g.rotHandle.y,r*1.15,0,6.2832);
+ EOX.fillStyle='#0f5c3a';EOX.fill();EOX.lineWidth=lw*1.1;EOX.strokeStyle='#ffffff';EOX.stroke();
+ EOX.beginPath();EOX.arc(g.rotHandle.x,g.rotHandle.y,r*0.4,0,6.2832);
+ EOX.fillStyle='#ffffff';EOX.fill();
+ EOX.restore()}
+function setTxtSize(v){const n=Math.max(2,Math.min(80,Math.round(v)));
+ $('tSz').value=n;$('tSzLbl').textContent=n+'%';drawTextPreview()}
+function applyText(){
+ const t=$('tTxt').value.trim();
+ if(!t){vlog('Type your text first.',true);return false}
+ if(!txt){vlog('Tap the picture to place the text first.',true);return false}
+ push();
+ const size=txtSize();
+ paintText(ECX,t,txt.x,txt.y,size,$('tCol').value,txt.rot||0,$('tFill').value,$('tCol2').value);
+ txt=null;clearOv();return true}
+function drawCursor(p){
+ if(tool!=='erase')return;
+ clearOv();
+ if(maskPainted&&EM.width===EC.width&&EM.height===EC.height){
+  EOX.save();EOX.drawImage(EM,0,0);
+  EOX.globalCompositeOperation='source-in';EOX.fillStyle='rgba(255,58,58,.5)';EOX.fillRect(0,0,EO.width,EO.height);
+  EOX.restore()}
+ if(!p)return;
+ const r=brushSize()/2,w1=Math.max(1.5,EC.width/500);
+ EOX.strokeStyle='rgba(0,0,0,.55)';EOX.lineWidth=w1*2;EOX.beginPath();EOX.arc(p.x,p.y,r+w1,0,6.2832);EOX.stroke();
+ EOX.strokeStyle='rgba(255,255,255,.95)';EOX.lineWidth=w1;EOX.beginPath();EOX.arc(p.x,p.y,r,0,6.2832);EOX.stroke()}
+EO.onpointerdown=e=>{
+ if(e.button&&e.button>0)return;
+ e.preventDefault();
+ try{EO.setPointerCapture(e.pointerId)}catch(_){}
+ if(panMode){panStart={x:e.clientX,y:e.clientY,sl:$('edstage').scrollLeft,st:$('edstage').scrollTop};EO.style.cursor='grabbing';return}
+ const p=pos(e);
+ if(tool==='erase'){erasing=true;curStroke={w:brushSize(),pts:[p]};strokes.push(curStroke);strokePts=curStroke.pts;maskStroke();drawCursor(p);return}
+ if(tool==='text'){
+  const t=$('tTxt').value.trim();
+  if(!t){vlog('Type your text first.',true);return}
+  ptrMap.set(e.pointerId,p);
+  if(ptrMap.size===1)txtBefore={str:txt?txt.str:null,x:txt?txt.x:null,y:txt?txt.y:null};
+  if(ptrMap.size===2){startPinch();return}
+  if(txt&&txt.str===t){
+   const hit=hitText(p);
+   if(hit&&hit.kind==='rotate'){
+    txtDrag={mode:'rotate',off:Math.atan2(p.y-txt.y,p.x-txt.x)-(txt.rot||0)};
+    EO.style.cursor='grabbing';return}
+   if(hit&&hit.kind==='scale'){
+    const g=hit.g;
+    txtDrag={mode:'scale',d0:Math.max(1,Math.hypot(p.x-txt.x,p.y-txt.y)),s0:Number($('tSz').value),g:g};
+    EO.style.cursor='nwse-resize';return}
+   if(hit&&hit.kind==='move'){
+    lastSnap=false;txtDrag={mode:'move',dx:p.x-txt.x,dy:p.y-txt.y};EO.style.cursor='move';return}}
+  let px=p.x,py=p.y;
+  const th=Math.max(10,EC.width*0.022),cx=EC.width/2,cy=EC.height/2;
+  const sx=Math.abs(px-cx)<th,sy=Math.abs(py-cy)<th;
+  if(sx)px=cx;if(sy)py=cy;
+  if(sx||sy){buzz(12);lastSnap=true}else lastSnap=false;
+  txt={str:t,x:px,y:py,rot:0};txtDrag={mode:'move',dx:0,dy:0};drawTextPreview(sx,sy);
+  vlog('Text placed. Drag corners to resize, the round dot to rotate.');
+  return}
+ if(tool==='crop'){
+  const h=crop?hitHandle(p):null;
+  if(h==='move')cropDrag={mode:'move',p0:p,c0:{x:crop.x,y:crop.y,w:crop.w,h:crop.h}};
+  else if(h)cropDrag={mode:'resize',h:h,c0:{x:crop.x,y:crop.y,w:crop.w,h:crop.h}};
+  else{crop={x:p.x,y:p.y,w:8,h:8};cropDrag={mode:'new',p0:p}}
+  drawCrop()}};
+EO.onpointermove=e=>{
+ if(panStart){const st=$('edstage');st.scrollLeft=panStart.sl-(e.clientX-panStart.x);st.scrollTop=panStart.st-(e.clientY-panStart.y);return}
+ const p=pos(e);
+ if(tool==='text'){
+  if(ptrMap.has(e.pointerId))ptrMap.set(e.pointerId,p);
+  if(ptrMap.size>=2){updatePinch();return}
+  if(txtDrag&&txt){
+   if(txtDrag.mode==='rotate'){
+    txt.rot=snapRot(Math.atan2(p.y-txt.y,p.x-txt.x)-txtDrag.off);drawTextPreview()}
+   else if(txtDrag.mode==='scale'){
+    const d=Math.hypot(p.x-txt.x,p.y-txt.y);
+    setTxtSize(txtDrag.s0*(d/txtDrag.d0))}
+   else{
+    let nx=p.x-txtDrag.dx,ny=p.y-txtDrag.dy;
+    const th=Math.max(10,EC.width*0.022),cx=EC.width/2,cy=EC.height/2;
+    const sx=Math.abs(nx-cx)<th,sy=Math.abs(ny-cy)<th;
+    if(sx)nx=cx;if(sy)ny=cy;
+    const on=sx||sy;
+    if(on&&!lastSnap)buzz(12);
+    lastSnap=on;
+    txt.x=nx;txt.y=ny;drawTextPreview(sx,sy)}
+   return}
+  if(txt){
+   const hit=hitText(p);
+   EO.style.cursor=!hit?'crosshair':hit.kind==='move'?'move':hit.kind==='rotate'?'grab':'nwse-resize'}
+  return}
+ if(tool==='erase'){
+  drawCursor(p);
+  if(erasing&&strokePts){strokePts.push(p);maskStroke()}
+  return}
+ if(tool==='crop'){
+  if(cropDrag){
+   if(cropDrag.mode==='new')crop=newRect(cropDrag.p0,p);
+   else if(cropDrag.mode==='move')crop=clampCrop({x:cropDrag.c0.x+(p.x-cropDrag.p0.x),y:cropDrag.c0.y+(p.y-cropDrag.p0.y),w:cropDrag.c0.w,h:cropDrag.c0.h});
+   else crop=resizeCrop(cropDrag.h,cropDrag.c0,p);
+   drawCrop();
+  }else if(crop){
+   const h=hitHandle(p);
+   EO.style.cursor=h==='move'?'move':h?(h==='n'||h==='s'?'ns-resize':(h==='e'||h==='w')?'ew-resize':(h==='nw'||h==='se')?'nwse-resize':'nesw-resize'):'crosshair'}}};
+EO.onpointerup=EO.onpointercancel=e=>{
+ if(e&&ptrMap.has(e.pointerId))ptrMap.delete(e.pointerId);
+ if(ptrMap.size<2)pinch=null;
+ lastSnap=false;
+ if(ptrMap.size===0)txtBefore=null;
+ erasing=false;cropDrag=null;strokePts=null;curStroke=null;panStart=null;txtDrag=null;
+ if(tool==='text'){EO.style.cursor='crosshair';drawTextPreview();return}
+ if(panMode)EO.style.cursor='grab';
+ if(tool==='erase')drawCursor(null)};
+EO.onpointerleave=()=>{if(tool==='erase'&&!erasing)drawCursor(null)};
+$('cRatio').onclick=e=>{const r=e.target.dataset.r;if(!r)return;
+ [...$('cRatio').children].forEach(b=>b.classList.toggle('on',b.dataset.r===r));
+ ratio=r==='free'?0:r==='orig'?origRatio:(function(){const a=r.split(':');return Number(a[0])/Number(a[1])})();
+ crop=fitRatio();drawCrop()};
+$('cReset').onclick=()=>{crop=fullCrop();drawCrop()};
+$('cApply').onclick=()=>{
+ if(!crop||crop.w<8||crop.h<8){vlog('Drag on the picture to choose the crop area.',true);return}
+ push();
+ const x=Math.round(crop.x),y=Math.round(crop.y),w=Math.max(1,Math.round(crop.w)),h=Math.max(1,Math.round(crop.h));
+ const t=document.createElement('canvas');t.width=w;t.height=h;
+ t.getContext('2d').drawImage(EC,x,y,w,h,0,0,w,h);
+ EC.width=w;EC.height=h;ECX.clearRect(0,0,w,h);ECX.drawImage(t,0,0);
+ crop=fullCrop();clearOv();drawCrop();refit();vlog('Cropped to '+w+' x '+h+'.')};
+function rotate(d){push();const t=document.createElement('canvas');t.width=EC.height;t.height=EC.width;
+ const x=t.getContext('2d');x.translate(t.width/2,t.height/2);x.rotate(d*Math.PI/2);x.drawImage(EC,-EC.width/2,-EC.height/2);
+ EC.width=t.width;EC.height=t.height;ECX.clearRect(0,0,EC.width,EC.height);ECX.drawImage(t,0,0);
+ origRatio=EC.width/EC.height;crop=tool==='crop'?fullCrop():null;clearOv();if(tool==='crop')drawCrop();refit()}
+$('rL').onclick=()=>rotate(-1);$('rR').onclick=()=>rotate(1);
+$('eUndo').onclick=()=>{const c=hist.pop();
+ if(!c){vlog('Nothing to undo.',true);return}
+ EC.width=c.width;EC.height=c.height;ECX.clearRect(0,0,EC.width,EC.height);ECX.drawImage(c,0,0);
+ maskReset();crop=tool==='crop'?fullCrop():null;clearOv();if(tool==='crop')drawCrop();refit()};
+function edDirty(){return hist.length>0||maskPainted||!!txt}
+$('eCancel').onclick=()=>{
+ if(edDirty()&&!confirm('Discard this edit? The picture goes back to how it was before you opened the editor.'))return;
+ closeEd();vlog('Edit discarded. Nothing was changed.')};
+$('eSave').onclick=()=>{
+ const b=$('eSave');if(b.disabled)return;
+ b.disabled=true;const lbl=b.textContent;b.textContent='Saving...';
+ EC.toBlob(blob=>{
+  b.disabled=false;b.textContent=lbl;
+  if(!blob){vlog('Could not save that picture.',true);return}
+  closeEd();if(edCb)edCb(blob);vlog('Edit saved. The logo is updated.')
+ },'image/png')};
+const fromBlob=b=>new File([b],'logo.png',{type:'image/png'});
+$('edIcon').onclick=()=>{if(!iconF){vlog('Choose or make an app logo first.',true);return}openEd(iconF,b=>{const f=fromBlob(b);setIcon(f,URL.createObjectURL(f))},$('cIcon').value)};
+$('edSpl').onclick=()=>{if(!splF){vlog('Choose a splash image or tap Logo to splash first.',true);return}openEd(splF,b=>{const f=fromBlob(b);setSpl(f,URL.createObjectURL(f))},$('cSplash').value)};
+$('ledit').onclick=()=>{if(!logoBlob)return;openEd(logoBlob,b=>{logoBlob=b;$('lprev').style.backgroundImage='url('+URL.createObjectURL(b)+')'},$('cIcon').value)};
+</script>
 </body>
 </html>
