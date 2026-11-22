@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0c10"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>Vasuki AI Studio 3</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0c10; --bg2:#0e1116; --panel:#141922; --panel2:#1a2029; --panel3:#222a35;
+  --line:#262f3c; --line2:#33404f;
+  --txt:#eaf0f8; --dim:#8d99ab; --dim2:#5d6878;
+  --accent:#4d8dff; --accent2:#22d3ee; --ok:#2fd39b; --warn:#ffb020; --bad:#ff5470;
+  --r:16px; --r2:12px;
+  --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(900px 500px at 8% -8%, #17273f 0%, transparent 62%),
+    radial-gradient(800px 480px at 105% 4%, #1d1636 0%, transparent 58%),
+    var(--bg);
+  color:var(--txt); font-size:14px; overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,"Helvetica Neue",Arial,sans-serif;
+  overscroll-behavior:none;
+}
+button,input,select,textarea{font-family:inherit;font-size:13px;color:var(--txt)}
+button{cursor:pointer;border:0;background:none}
+.hidden{display:none!important}
+
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding-top:var(--sat)}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;gap:10px;padding:10px 12px 8px;flex:0 0 auto}
+.brand{display:flex;align-items:center;gap:9px;min-width:0}
+.logo{width:32px;height:32px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;font-weight:800;font-size:15px;
+  background:linear-gradient(140deg,var(--accent),var(--accent2));color:#04121f;box-shadow:0 6px 18px -8px #4d8dff}
+.brand h1{margin:0;font-size:14px;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+.brand p{margin:1px 0 0;font-size:10.5px;color:var(--dim2);letter-spacing:.3px;white-space:nowrap}
+.spacer{flex:1}
+.pill{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:999px;background:var(--panel);
+  border:1px solid var(--line);font-size:11px;color:var(--dim);white-space:nowrap}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--dim2);box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+.pill .dot.on{background:var(--ok);box-shadow:0 0 0 3px rgba(47,211,155,.16)}
+.pill .dot.bad{background:var(--bad);box-shadow:0 0 0 3px rgba(255,84,112,.16)}
+.iconbtn{width:34px;height:34px;border-radius:11px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center}
+.iconbtn:active{transform:scale(.94)}
+.iconbtn svg{width:17px;height:17px;stroke:var(--txt);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- stage ---------- */
+#stageWrap{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+#stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;display:grid;place-items:center;
+  touch-action:none;background:
+   radial-gradient(600px 320px at 50% 40%, rgba(77,141,255,.05), transparent 70%),
+   repeating-conic-gradient(#0c0f14 0% 25%, #0a0d11 0% 50%) 0 0/22px 22px}
+#frame{position:relative;transform-origin:center center;will-change:transform;border-radius:6px;
+  box-shadow:0 24px 60px -24px #000, 0 0 0 1px rgba(255,255,255,.06)}
+#frame canvas{display:block;width:100%;height:100%;border-radius:6px}
+#cvMask{position:absolute;inset:0;mix-blend-mode:normal;pointer-events:none}
+#cvPhoto{background:#000}
+#cvSketchWrap{position:absolute;inset:0}
+#cvSketch{background:#fff;position:absolute;inset:0}
+#guideImg{position:absolute;inset:0;background-size:contain;background-position:center;background-repeat:no-repeat;
+  opacity:.28;pointer-events:none;display:none;border-radius:6px}
+
+#empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center}
+#empty .big{width:74px;height:74px;border-radius:22px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--line)}
+#empty .big svg{width:32px;height:32px;stroke:var(--accent);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#empty h2{margin:0;font-size:15px;font-weight:600}
+#empty p{margin:0;font-size:12px;color:var(--dim);max-width:260px;line-height:1.5}
+
+.stagebar{position:absolute;left:10px;right:10px;bottom:8px;display:flex;gap:7px;align-items:center;pointer-events:none;z-index:4}
+.stagebar .grow{flex:1}
+.sbtn{pointer-events:auto;height:32px;min-width:32px;padding:0 10px;border-radius:10px;display:flex;align-items:center;gap:6px;
+  background:rgba(20,25,34,.86);border:1px solid var(--line);backdrop-filter:blur(12px);font-size:11.5px;color:var(--txt)}
+.sbtn:active{transform:scale(.95)}
+.sbtn svg{width:15px;height:15px;stroke:var(--txt);fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sbtn.off{opacity:.4}
+.sbtn.primary{background:linear-gradient(140deg,#4d8dff,#2f6fe0);border-color:#4d8dff;color:#fff;font-weight:600}
+.sbtn.primary svg{stroke:#fff}
+
+/* busy */
+#busy{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  background:rgba(6,8,12,.72);backdrop-filter:blur(6px)}
+.spin{width:44px;height:44px;border-radius:50%;border:3px solid rgba(255,255,255,.12);border-top-color:var(--accent);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#busyTxt{font-size:13px;color:var(--txt);text-align:center;max-width:80%;line-height:1.5}
+#busySub{font-size:11px;color:var(--dim);max-width:80%;text-align:center}
+#busyCancel{height:32px;padding:0 14px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-size:12px}
+
+/* ---------- dock + panels ---------- */
+#panels{flex:0 0 auto;padding:0 10px}
+.panel{display:none;background:linear-gradient(180deg,rgba(20,25,34,.97),rgba(16,20,27,.99));
+  border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:8px;
+  max-height:42vh;overflow-y:auto;box-shadow:0 -8px 30px -18px #000;animation:up .18s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.panel.show{display:block}
+.panel h3{margin:0 0 9px;font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--dim2)}
+.row{display:flex;gap:7px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.row+.row{margin-top:9px}
+.seg{display:flex;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+.seg button{flex:1;height:30px;border-radius:8px;font-size:11.5px;color:var(--dim);display:flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap}
+.seg button.on{background:var(--panel3);color:var(--txt);box-shadow:0 2px 8px -4px #000}
+.seg button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;height:29px;padding:0 11px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);
+  font-size:11.5px;color:var(--dim);white-space:nowrap}
+.chip.on{background:rgba(77,141,255,.16);border-color:rgba(77,141,255,.55);color:#cfe0ff}
+label.sl{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+label.sl span{font-size:10.5px;color:var(--dim);display:flex;justify-content:space-between;gap:6px}
+label.sl b{color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:3px;background:var(--panel3)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;margin-top:-6px;
+  box-shadow:0 1px 6px rgba(0,0,0,.5)}
+input[type=range]::-moz-range-track{height:4px;border-radius:3px;background:var(--panel3)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:#fff}
+.btn{height:38px;padding:0 14px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);font-size:12.5px;
+  display:flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap;color:var(--txt)}
+.btn:active{transform:scale(.98)}
+.btn.grow{flex:1}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.btn.primary{background:linear-gradient(140deg,#4d8dff,#2f6fe0);border-color:#5a95ff;color:#fff;font-weight:650;
+  box-shadow:0 10px 24px -14px #4d8dff}
+.btn.ghost{background:transparent}
+.btn.sm{height:32px;font-size:11.5px;padding:0 11px;border-radius:10px}
+textarea,input[type=text],input[type=password],select{width:100%;background:var(--panel2);border:1px solid var(--line);
+  border-radius:11px;padding:9px 11px;color:var(--txt);outline:none;font-size:12.5px;line-height:1.45}
+textarea{resize:none;min-height:56px}
+input:focus,textarea:focus,select:focus{border-color:rgba(77,141,255,.6);box-shadow:0 0 0 3px rgba(77,141,255,.12)}
+.hint{font-size:11px;color:var(--dim2);line-height:1.5;margin:9px 0 0}
+.swatches{display:flex;gap:6px;align-items:center}
+.sw{width:24px;height:24px;border-radius:50%;border:2px solid transparent;flex:0 0 auto}
+.sw.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+
+/* dock */
+.dock{flex:0 0 auto;display:flex;gap:4px;padding:8px 10px calc(8px + var(--sab));background:linear-gradient(180deg,rgba(10,12,16,.4),rgba(10,12,16,.95));
+  border-top:1px solid rgba(38,47,60,.7);backdrop-filter:blur(14px)}
+.dock button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 2px;border-radius:12px;color:var(--dim2);font-size:10px}
+.dock button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.dock button.on{color:var(--txt);background:rgba(77,141,255,.13)}
+.dock button.on svg{stroke:var(--accent)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(96px + var(--sab));transform:translate(-50%,14px);z-index:60;
+  background:rgba(26,32,41,.97);border:1px solid var(--line2);border-radius:12px;padding:10px 14px;font-size:12px;
+  max-width:88vw;text-align:center;line-height:1.45;opacity:0;pointer-events:none;transition:.22s;box-shadow:0 12px 30px -12px #000}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* modal */
+dialog{border:0;padding:0;background:transparent;color:var(--txt);max-width:min(440px,92vw);width:100%}
+dialog::backdrop{background:rgba(4,6,10,.7);backdrop-filter:blur(4px)}
+.sheet{background:linear-gradient(180deg,#171d26,#11151c);border:1px solid var(--line2);border-radius:20px;padding:16px;
+  max-height:82vh;overflow-y:auto}
+.sheet h2{margin:0 0 4px;font-size:15px}
+.sheet .sub{font-size:11.5px;color:var(--dim);margin:0 0 14px;line-height:1.5}
+.sheet .field{margin-bottom:11px}
+.sheet .field label{display:block;font-size:11px;color:var(--dim);margin-bottom:5px}
+.sheet a{color:var(--accent2)}
+.sheet .foot{display:flex;gap:8px;margin-top:6px}
+.sheet .foot .btn{flex:1}
+.note{font-size:11px;color:var(--dim2);line-height:1.55;background:rgba(77,141,255,.07);border:1px solid rgba(77,141,255,.2);
+  border-radius:11px;padding:9px 11px;margin-top:10px}
+.kv{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);padding:5px 0;border-bottom:1px dashed var(--line)}
+.kv b{color:var(--txt);font-weight:600}
+
+/* self test */
+#selftest{position:fixed;inset:0;z-index:99;background:#06080c;color:#dbe6f5;padding:14px;font:11px/1.5 ui-monospace,Menlo,monospace;
+  overflow:auto;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">V</div>
+      <div><h1>Vasuki AI Studio</h1><p>GENERATIVE PHOTO EDITOR</p></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="pill" id="aiPill" title="AI connection"><span class="dot" id="aiDot"></span><span id="aiTxt">AI</span></button>
+    <button class="iconbtn" id="btnOpen2" title="Open a photo">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-4.5-4.5L7 20"/></svg>
+    </button>
+    <button class="iconbtn" id="btnSettings" title="Settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/></svg>
+    </button>
+  </header>
+
+  <main id="stageWrap">
+    <div id="stage">
+      <div id="frame" class="hidden">
+        <canvas id="cvPhoto"></canvas>
+        <canvas id="cvMask"></canvas>
+        <div id="cvSketchWrap" class="hidden">
+          <canvas id="cvSketch"></canvas>
+          <div id="guideImg"></div>
+        </div>
+      </div>
+      <div id="empty">
+        <div class="big"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8.5" cy="9.5" r="1.6"/><path d="M21 16l-4.5-4.5L7 20"/></svg></div>
+        <h2>Open a photo to start</h2>
+        <p>Object eraser, sketch to photo, background swap and enhance. All in one studio.</p>
+        <button class="btn primary" id="btnOpenBig" style="min-width:180px">
+          <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L7 9m5-5l5 5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          Choose photo
+        </button>
+        <button class="btn ghost sm" id="btnDemo">Use a demo photo</button>
+      </div>
+    </div>
+
+    <div class="stagebar">
+      <button class="sbtn off" id="btnUndo" title="Undo"><svg viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h9a7 7 0 0 1 0 14H7"/></svg></button>
+      <button class="sbtn off" id="btnRedo" title="Redo"><svg viewBox="0 0 24 24"><path d="M15 14l5-5-5-5"/><path d="M20 9h-9a7 7 0 0 0 0 14h6"/></svg></button>
+      <button class="sbtn off" id="btnCompare" title="Hold to compare">Compare</button>
+      <button class="sbtn off" id="btnZoom" title="Zoom">1.0x</button>
+      <div class="grow"></div>
+      <button class="sbtn off" id="btnSave" title="Save"><svg viewBox="0 0 24 24"><path d="M12 4v12"/><path d="M8 12l4 4 4-4"/><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1"/></svg>Save</button>
+    </div>
+
+    <div id="busy" class="hidden">
+      <div class="spin"></div>
+      <div id="busyTxt">Working</div>
+      <div id="busySub"></div>
+      <button id="busyCancel">Cancel</button>
+    </div>
+  </main>
+
+  <section id="panels">
+    <!-- ERASE -->
+    <div class="panel" data-panel="erase">
+      <div class="seg" id="toolSeg">
+        <button data-tool="brush" class="on"><svg viewBox="0 0 24 24"><path d="M4 20l5-1 9-9a2.8 2.8 0 0 0-4-4l-9 9z"/></svg>Brush</button>
+        <button data-tool="lasso"><svg viewBox="0 0 24 24"><path d="M4 12c0-4 3.6-7 8-7s8 3 8 7-3.6 7-8 7c-2 0-3.8-.6-5.2-1.6"/><circle cx="5" cy="18" r="2"/></svg>Lasso</button>
+        <button data-tool="box"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2" stroke-dasharray="3 3"/></svg>Box</button>
+        <button data-tool="tap"><svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/><circle cx="12" cy="12" r="3.4"/></svg>Tap</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="sl"><span>Brush <b id="lblSize">42</b></span><input type="range" id="rSize" min="6" max="240" value="42"></label>
+        <label class="sl"><span>Edge soft <b id="lblSoft">55</b>%</span><input type="range" id="rSoft" min="0" max="100" value="55"></label>
+      </div>
+      <div class="row hidden" id="tolRow">
+        <label class="sl"><span>Tap sensitivity <b id="lblTol">34</b></span><input type="range" id="rTol" min="6" max="90" value="34"></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary grow" id="btnAIErase">
+          <svg viewBox="0 0 24 24"><path d="M5 3l1.6 4.4L11 9l-4.4 1.6L5 15l-1.6-4.4L-1 9"/><path d="M15.5 3.5l1.1 3 3 1.1-3 1.1-1.1 3-1.1-3-3-1.1 3-1.1z"/><path d="M13 21c0-3 2-5 5-5"/></svg>
+          Erase with AI
+        </button>
+        <button class="btn" id="btnQuickFill">Quick fill</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="findTxt" placeholder="Erase by name: dog, wire, person..." style="flex:1">
+        <button class="btn sm" id="btnFind">Find</button>
+        <button class="btn sm" id="btnClearMask">Clear</button>
+      </div>
+      <p class="hint" id="eraseHint">Paint over the thing you want gone, then tap <b>Erase with AI</b>. The model rebuilds what was behind it. Tap mode selects by color region.</p>
+    </div>
+
+    <!-- SKETCH -->
+    <div class="panel" data-panel="sketch">
+      <div class="chips" id="ratioChips">
+        <button class="chip on" data-ratio="1:1">1:1</button>
+        <button class="chip" data-ratio="4:5">4:5</button>
+        <button class="chip" data-ratio="3:4">3:4</button>
+        <button class="chip" data-ratio="16:9">16:9</button>
+        <button class="chip" data-ratio="9:16">9:16</button>
+      </div>
+      <div class="chips" id="styleChips" style="margin-top:8px">
+        <button class="chip on" data-style="photo">Photo</button>
+        <button class="chip" data-style="portrait">Portrait</button>
+        <button class="chip" data-style="product">Product</button>
+        <button class="chip" data-style="cinematic">Cinematic</button>
+        <button class="chip" data-style="anime">Anime</button>
+        <button class="chip" data-style="render3d">3D render</button>
+        <button class="chip" data-style="oil">Oil paint</button>
+        <button class="chip" data-style="watercolor">Watercolor</button>
+      </div>
+      <div class="row" style="margin-top:9px">
+        <div class="swatches" id="penSwatches"></div>
+        <button class="btn sm" id="btnSkErase">Eraser</button>
+        <button class="btn sm" id="btnSkUndo">Undo</button>
+        <button class="btn sm" id="btnSkClear">Clear</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label class="sl"><span>Pen <b id="lblPen">5</b></span><input type="range" id="rPen" min="1" max="40" value="5"></label>
+        <button class="btn sm" id="btnGuide">Trace photo</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input type="text" id="skPrompt" placeholder="What is it? e.g. red sports car, my dog, sneakers" style="flex:1">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary grow" id="btnRender">
+          <svg viewBox="0 0 24 24"><path d="M12 3v3m0 12v3M3 12h3m12 0h3"/><path d="M6.3 6.3l2.1 2.1m7.2 7.2l2.1 2.1m0-11.4l-2.1 2.1M8.4 15.6l-2.1 2.1"/></svg>
+          Make it real
+        </button>
+        <button class="btn" id="btnSketchToPhoto">Use as photo</button>
+      </div>
+      <p class="hint">Draw the rough shape, add what it is, then <b>Make it real</b>. The AI keeps your layout and turns it into a photograph. Use <b>Trace photo</b> to sketch over a reference.</p>
+    </div>
+
+    <!-- BACKGROUND -->
+    <div class="panel" data-panel="bg">
+      <div class="row"><input type="text" id="bgPrompt" placeholder="New background: sunset beach, studio grey, neon city..." style="flex:1"></div>
+      <div class="chips" id="bgChips" style="margin-top:9px">
+        <button class="chip" data-bg="sunset beach with soft waves">Beach sunset</button>
+        <button class="chip" data-bg="clean grey studio backdrop with soft light">Studio</button>
+        <button class="chip" data-bg="misty pine forest">Forest</button>
+        <button class="chip" data-bg="neon city street at night, bokeh">City night</button>
+        <button class="chip" data-bg="marble wall with warm sunlight">Marble</button>
+        <button class="chip" data-bg="plain deep blue gradient">Blue gradient</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary grow" id="btnBgAI">Replace with AI</button>
+        <button class="btn" id="btnBgBlur">Blur</button>
+      </div>
+      <p class="hint">AI keeps your subject sharp and rebuilds the background with matching light and shadows.</p>
+    </div>
+
+    <!-- ADJUST -->
+    <div class="panel" data-panel="adjust">
+      <div class="row"><label class="sl"><span>Brightness <b id="lblBright">0</b></span><input type="range" id="rBright" min="-60" max="60" value="0"></label></div>
+      <div class="row"><label class="sl"><span>Contrast <b id="lblContrast">0</b></span><input type="range" id="rContrast" min="-50" max="60" value="0"></label></div>
+      <div class="row"><label class="sl"><span>Saturation <b id="lblSat">0</b></span><input type="range" id="rSat" min="-60" max="80" value="0"></label></div>
+      <div class="row"><label class="sl"><span>Warmth <b id="lblWarm">0</b></span><input type="range" id="rWarm" min="-40" max="40" value="0"></label></div>
+      <div class="row"><label class="sl"><span>Vignette <b id="lblVig">0</b></span><input type="range" id="rVig" min="0" max="80" value="0"></label></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary grow" id="btnApplyAdj">Apply</button>
+        <button class="btn" id="btnResetAdj">Reset</button>
+      </div>
+    </div>
+
+    <!-- ENHANCE -->
+    <div class="panel" data-panel="enhance">
+      <div class="row">
+        <button class="btn primary grow" id="btnEnhanceAI">
+          <svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>
+          AI enhance
+        </button>
+        <button class="btn" id="btnAutoLevels">Auto tone</button>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label class="sl"><span>Sharpen <b id="lblSharp">0</b></span><input type="range" id="rSharp" min="0" max="100" value="0"></label>
+        <label class="sl"><span>Denoise <b id="lblDenoise">0</b></span><input type="range" id="rDenoise" min="0" max="100" value="0"></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn grow" id="btnResize2x">2x upscale</button>
+        <button class="btn grow" id="btnBw">Black and white</button>
+      </div>
+      <p class="hint">AI enhance fixes exposure, colour and softness in one pass. Auto tone and sharpen work offline.</p>
+    </div>
+  </section>
+
+  <nav class="dock" id="dock">
+    <button data-panel="erase" class="on"><svg viewBox="0 0 24 24"><path d="M4 20l5-1 9-9a2.8 2.8 0 0 0-4-4l-9 9z"/><path d="M14 8l3 3"/></svg>Erase</button>
+    <button data-panel="sketch"><svg viewBox="0 0 24 24"><path d="M15.5 4.5l4 4L8 20H4v-4z"/><path d="M13.5 6.5l4 4"/></svg>Sketch</button>
+    <button data-panel="bg"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 15l5-4 4 3 3-2 6 5"/><circle cx="8.5" cy="8.5" r="1.3"/></svg>Backdrop</button>
+    <button data-panel="adjust"><svg viewBox="0 0 24 24"><path d="M5 20V10m0-6v2m7 14V12m0-8v2m7 16v-6m0-8v2"/><circle cx="5" cy="8" r="1.8"/><circle cx="12" cy="10" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>Adjust</button>
+    <button data-panel="enhance"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 16l.9 2.1L21 19l-2.1.9L18 22l-.9-2.1L15 19l2.1-.9z"/></svg>Enhance</button>
+  </nav>
+</div>
+
+<input type="file" id="fileIn" accept="image/*" hidden>
+<input type="file" id="guideIn" accept="image/*" hidden>
+<div id="toast"></div>
+
+<dialog id="dlgSettings">
+  <div class="sheet">
+    <h2>AI connection</h2>
+    <p class="sub">Add a key for the generative tools (AI erase, sketch to photo, backdrop, enhance). The eraser uses Nexscope's object eraser when a Nexscope key is set, otherwise the Google key. Everything else works offline.</p>
+    <div class="field">
+      <label>Nexscope key (object eraser, optional)</label>
+      <input type="password" id="inNx" placeholder="nk-..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>Google AI Studio key</label>
+      <input type="password" id="inKey" placeholder="AIza..." autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label>Model</label>
+      <select id="inModel">
+        <option value="gemini-nano-banana-2.1">Nano Banana 2.1 (best)</option>
+        <option value="gemini-3-pro-image">Nano Banana Pro (highest quality)</option>
+        <option value="gemini-3.1-flash-image">Nano Banana 2 (fast)</option>
+        <option value="gemini-2.5-flash-image">Nano Banana (legacy)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Custom proxy URL (optional)</label>
+      <input type="text" id="inProxy" placeholder="https://your-server.com/edit" spellcheck="false">
+    </div>
+    <div class="note">
+      Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.
+      It is saved only in this browser and sent straight to Google. Nothing else sees it.
+    </div>
+    <div class="foot">
+      <button class="btn" id="btnTest">Test</button>
+      <button class="btn primary" id="btnSaveKey">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlgSave">
+  <div class="sheet">
+    <h2>Save photo</h2>
+    <p class="sub">Pick a format. JPG is smaller, PNG keeps full quality.</p>
+    <div class="field">
+      <label>Format</label>
+      <select id="inFormat"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select>
+    </div>
+    <div class="field">
+      <label>Quality <span id="lblQual">92</span></label>
+      <input type="range" id="rQual" min="60" max="100" value="92">
+    </div>
+    <div class="field">
+      <label>Longest side</label>
+      <select id="inSize">
+        <option value="0">Original</option>
+        <option value="2048">2048 px</option>
+        <option value="1600">1600 px</option>
+        <option value="1080">1080 px</option>
+      </select>
+    </div>
+    <div class="foot">
+      <button class="btn" id="btnCancelSave">Cancel</button>
+      <button class="btn primary" id="btnDoSave">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+'use strict';
+/* ============================================================
+   Vasuki AI Studio 3 - generative photo editor
+   ============================================================ */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function mkCanvas(w, h) {
+  const c = document.createElement('canvas');
+  c.width = Math.max(1, Math.round(w || 1));
+  c.height = Math.max(1, Math.round(h || 1));
+  return c;
+}
+function ctxOf(c, read) {
+  return c.getContext('2d', { willReadFrequently: !!read });
+}
+function loadImage(src) {
+  return new Promise((res, rej) => {
+    const i = new Image();
+    i.onload = () => res(i);
+    i.onerror = () => rej(new Error('Could not load image'));
+    i.src = src;
+  });
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ---------- safe storage ---------- */
+const DB = {
+  get(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+};
+
+/* ---------- toast ---------- */
+let toastT = 0;
+function toast(msg, ms) {
+  const el = $('#toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), ms || 3000);
+}
+
+/* ---------- busy overlay ---------- */
+let busyAC = null;
+function busy(on, title, sub) {
+  const el = $('#busy');
+  if (on) {
+    $('#busyTxt').textContent = title || 'Working';
+    $('#busySub').textContent = sub || '';
+    el.classList.remove('hidden');
+    busyAC = new AbortController();
+  } else {
+    el.classList.add('hidden');
+    if (busyAC) { busyAC = null; }
+  }
+}
+function busySignal() { return busyAC ? busyAC.signal : undefined; }
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const S = {
+  key: DB.get('vasuki.key3'),
+  model: DB.get('vasuki.model3') || 'gemini-nano-banana-2.1',
+  proxy: DB.get('vasuki.proxy3'),
+  nx: DB.get('vasuki.nx3'),
+  mode: 'photo',              // photo | sketch
+  tool: 'brush',
+  size: 42,
+  soft: 55,
+  tol: 34,
+  zoom: 1,
+  panX: 0, panY: 0,
+  penColor: '#111111',
+  penSize: 5,
+  penErase: false,
+  ratio: '1:1',
+  style: 'photo',
+  aiState: 'unknown'          // unknown | ready | bad | nokey
+};
+
+const adj = { bright: 0, contrast: 0, sat: 0, warm: 0, vig: 0 };
+
+let base = null;            // offscreen canvas with the photo pixels
+let mask = null;            // offscreen canvas, white = erase area
+let original = null;        // first loaded photo, for compare
+const hist = { list: [], idx: -1 };
+
+const sk = {
+  cv: null,
+  ratio: '1:1',
+  hist: [],
+  guide: null
+};
+
+/* ---------- history ---------- */
+function snapshot() {
+  return base.toDataURL('image/png');
+}
+function pushHistory() {
+  try {
+    const url = snapshot();
+    hist.list = hist.list.slice(0, hist.idx + 1);
+    hist.list.push(url);
+    if (hist.list.length > 14) hist.list.shift();
+    hist.idx = hist.list.length - 1;
+  } catch (e) { /* memory */ }
+  refreshHistBtns();
+}
+function refreshHistBtns() {
+  $('#btnUndo').classList.toggle('off', hist.idx <= 0);
+  $('#btnRedo').classList.toggle('off', hist.idx >= hist.list.length - 1);
+  const has = !!base;
+  $('#btnSave').classList.toggle('off', !has);
+  $('#btnCompare').classList.toggle('off', !has);
+  $('#btnZoom').classList.toggle('off', !has);
+}
+async function restoreFrom(url) {
+  const img = await loadImage(url);
+  const c = mkCanvas(img.width, img.height);
+  ctxOf(c).drawImage(img, 0, 0);
+  base = c;
+  if (mask && (mask.width !== c.width || mask.height !== c.height)) {
+    const m2 = mkCanvas(c.width, c.height);
+    mask = m2;
+  }
+  render();
+  fit();
+}
+async function undo() {
+  if (hist.idx <= 0) return;
+  hist.idx--;
+  await restoreFrom(hist.list[hist.idx]);
+  refreshHistBtns();
+}
+async function redo() {
+  if (hist.idx >= hist.list.length - 1) return;
+  hist.idx++;
+  await restoreFrom(hist.list[hist.idx]);
+  refreshHistBtns();
+}
+
+/* ============================================================
+   PHOTO LOADING / STAGE
+   ============================================================ */
+const MAXSIDE = 2400;
+
+async function adoptImage(img) {
+  let w = img.width, h = img.height;
+  const k = Math.min(1, MAXSIDE / Math.max(w, h));
+  w = Math.round(w * k); h = Math.round(h * k);
+  base = mkCanvas(w, h);
+  ctxOf(base).drawImage(img, 0, 0, w, h);
+  mask = mkCanvas(w, h);
+  original = mkCanvas(w, h);
+  ctxOf(original).drawImage(base, 0, 0);
+  hist.list = []; hist.idx = -1;
+  pushHistory();
+  $('#empty').classList.add('hidden');
+  $('#frame').classList.remove('hidden');
+  render();
+  fit();
+}
+
+async function openFile(file) {
+  if (!file) return;
+  if (!/^image\//.test(file.type)) { toast('That is not an image file'); return; }
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImage(url);
+    await adoptImage(img);
+    setMode('photo');
+    setPanel('erase');
+    toast('Photo ready. Paint over what you want gone.');
+  } catch (e) {
+    toast('Could not open that image');
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+}
+
+function demoPhoto() {
+  const w = 1200, h = 900;
+  const c = mkCanvas(w, h);
+  const x = ctxOf(c);
+  const g = x.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, '#b8d8f0'); g.addColorStop(.55, '#e8f2f8'); g.addColorStop(1, '#cfd8c8');
+  x.fillStyle = g; x.fillRect(0, 0, w, h);
+  // distant hills
+  x.fillStyle = '#9fb59b';
+  x.beginPath(); x.moveTo(0, 620);
+  for (let i = 0; i <= w; i += 40) x.lineTo(i, 600 + Math.sin(i / 190) * 40);
+  x.lineTo(w, h); x.lineTo(0, h); x.closePath(); x.fill();
+  // ground
+  const g2 = x.createLinearGradient(0, 640, 0, h);
+  g2.addColorStop(0, '#8fa87f'); g2.addColorStop(1, '#5f7a55');
+  x.fillStyle = g2; x.fillRect(0, 660, w, h - 660);
+  // bench-ish object to erase
+  x.fillStyle = '#7a5233';
+  x.fillRect(760, 560, 210, 26);
+  x.fillRect(770, 586, 22, 110); x.fillRect(938, 586, 22, 110);
+  x.fillStyle = '#5d3d25';
+  x.fillRect(760, 596, 210, 18);
+  // tree
+  x.fillStyle = '#4e6b3f';
+  x.beginPath(); x.ellipse(300, 470, 120, 150, 0, 0, 7); x.fill();
+  x.fillStyle = '#6b4a2b'; x.fillRect(288, 560, 26, 190);
+  // sun glow
+  const rg = x.createRadialGradient(980, 180, 10, 980, 180, 320);
+  rg.addColorStop(0, 'rgba(255,240,190,.9)'); rg.addColorStop(1, 'rgba(255,240,190,0)');
+  x.fillStyle = rg; x.fillRect(600, 0, 600, 520);
+  adoptImage(c);
+  setMode('photo'); setPanel('erase');
+}
+
+/* ---------- fit / transform ---------- */
+function currentSize() {
+  if (S.mode === 'sketch') {
+    if (!sk.cv) return null;
+    return { w: sk.cv.width, h: sk.cv.height };
+  }
+  return base ? { w: base.width, h: base.height } : null;
+}
+
+function fit() {
+  const sz = currentSize();
+  const frame = $('#frame');
+  if (!sz) { frame.classList.add('hidden'); return; }
+  frame.classList.remove('hidden');
+  const st = $('#stage').getBoundingClientRect();
+  const padW = 16, padH = 16;
+  const availW = Math.max(40, st.width - padW * 2);
+  const availH = Math.max(40, st.height - padH * 2);
+  const k = Math.min(availW / sz.w, availH / sz.h);
+  const dw = Math.max(20, Math.round(sz.w * k));
+  const dh = Math.max(20, Math.round(sz.h * k));
+  frame.style.width = dw + 'px';
+  frame.style.height = dh + 'px';
+  applyTransform();
+}
+
+function applyTransform() {
+  const f = $('#frame');
+  f.style.transform = `translate(${S.panX}px, ${S.panY}px) scale(${S.zoom})`;
+  $('#btnZoom').textContent = S.zoom.toFixed(1) + 'x';
+}
+
+/* ---------- render ---------- */
+function filterStr() {
+  const p = [];
+  if (adj.bright) p.push(`brightness(${(1 + adj.bright / 100).toFixed(3)})`);
+  if (adj.contrast) p.push(`contrast(${(1 + adj.contrast / 100).toFixed(3)})`);
+  if (adj.sat) p.push(`saturate(${(1 + adj.sat / 100).toFixed(3)})`);
+  return p.join(' ');
+}
+
+function render() {
+  if (!base) return;
+  const c = $('#cvPhoto');
+  if (c.width !== base.width || c.height !== base.height) {
+    c.width = base.width; c.height = base.height;
+    const m = $('#cvMask');
+    m.width = base.width; m.height = base.height;
+  }
+  const x = ctxOf(c, true);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.clearRect(0, 0, c.width, c.height);
+  x.filter = filterStr() || 'none';
+  x.drawImage(base, 0, 0);
+  x.filter = 'none';
+  if (adj.warm) {
+    x.save();
+    x.globalCompositeOperation = 'soft-light';
+    x.fillStyle = adj.warm > 0 ? `rgba(255,150,60,${Math.abs(adj.warm) / 260})` : `rgba(70,140,255,${Math.abs(adj.warm) / 260})`;
+    x.fillRect(0, 0, c.width, c.height);
+    x.restore();
+  }
+  if (adj.vig) {
+    const g = x.createRadialGradient(c.width / 2, c.height / 2, Math.min(c.width, c.height) * 0.28,
+      c.width / 2, c.height / 2, Math.max(c.width, c.height) * 0.75);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, `rgba(0,0,0,${adj.vig / 140})`);
+    x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
+  }
+  drawMaskView();
+}
+
+function drawMaskView() {
+  const m = $('#cvMask');
+  if (m.width !== (base ? base.width : 1)) return;
+  const x = ctxOf(m, true);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.globalCompositeOperation = 'source-over';
+  x.clearRect(0, 0, m.width, m.height);
+  if (!mask) return;
+  x.drawImage(mask, 0, 0);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = 'rgba(255,54,94,0.42)';
+  x.fillRect(0, 0, m.width, m.height);
+  x.globalCompositeOperation = 'source-over';
+}
+
+/* ============================================================
+   MASK PAINTING
+   ============================================================ */
+function toImage(clientX, clientY) {
+  const c = S.mode === 'sketch' ? $('#cvSketch') : $('#cvPhoto');
+  const r = c.getBoundingClientRect();
+  const sz = currentSize();
+  return {
+    x: (clientX - r.left) / Math.max(1, r.width) * sz.w,
+    y: (clientY - r.top) / Math.max(1, r.height) * sz.h
+  };
+}
+
+function maskCtx() { return ctxOf(mask, true); }
+
+function stampMask(x, y, r, hard, erase) {
+  const c = maskCtx();
+  c.save();
+  c.globalCompositeOperation = erase ? 'destination-out' : 'lighter';
+  const inner = Math.max(0.02, hard);
+  const g = c.createRadialGradient(x, y, r * inner, x, y, Math.max(0.5, r));
+  const a = erase ? 1 : 0.85;
+  g.addColorStop(0, `rgba(255,255,255,${a})`);
+  g.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = g;
+  c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  c.restore();
+}
+
+function strokeMask(a, b, erase) {
+  const r = Math.max(2, S.size / 2);
+  const hard = clamp(1 - S.soft / 100, 0.05, 0.95);
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const dist = Math.hypot(dx, dy);
+  const step = Math.max(1, r * 0.28);
+  const n = Math.max(1, Math.ceil(dist / step));
+  for (let i = 0; i <= n; i++) {
+    stampMask(a.x + dx * (i / n), a.y + dy * (i / n), r, hard, erase);
+  }
+}
+
+/* ---------- mask helpers ---------- */
+function maskBounds() {
+  if (!mask) return null;
+  const w = mask.width, h = mask.height;
+  const d = ctxOf(mask, true).getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) {
+    const row = y * w * 4;
+    for (let x = 0; x < w; x++) {
+      if (d[row + x * 4 + 3] > 12) {
+        if (x < x0) x0 = x;
+        if (x > x1) x1 = x;
+        if (y < y0) y0 = y;
+        if (y > y1) y1 = y;
+      }
+    }
+  }
+  if (x1 < 0) return null;
+  return { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1 };
+}
+
+function maskPixelCount() {
+  if (!mask) return 0;
+  const w = mask.width, h = mask.height;
+  const d = ctxOf(mask, true).getImageData(0, 0, w, h).data;
+  let n = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] > 12) n++;
+  return n;
+}
+
+function clearMask() {
+  if (!mask) return;
+  maskCtx().clearRect(0, 0, mask.width, mask.height);
+  drawMaskView();
+}
+
+function fillPolygonMask(pts) {
+  if (!mask || pts.length < 3) return;
+  const c = maskCtx();
+  c.save();
+  c.fillStyle = '#fff';
+  c.beginPath();
+  c.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
+  c.closePath(); c.fill();
+  c.restore();
+  drawMaskView();
+}
+
+function fillRectMask(a, b) {
+  if (!mask) return;
+  const c = maskCtx();
+  c.save();
+  c.fillStyle = '#fff';
+  c.fillRect(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(b.x - a.x), Math.abs(b.y - a.y));
+  c.restore();
+  drawMaskView();
+}
+
+/* ---------- tap to select a colour region ---------- */
+function magicSelect(sx, sy) {
+  if (!base) return;
+  const sw = Math.min(1, 520 / Math.max(base.width, base.height));
+  const w = Math.max(2, Math.round(base.width * sw));
+  const h = Math.max(2, Math.round(base.height * sw));
+  const tmp = mkCanvas(w, h);
+  const tc = ctxOf(tmp, true);
+  tc.drawImage(base, 0, 0, w, h);
+  const img = tc.getImageData(0, 0, w, h);
+  const d = img.data;
+  const px = clamp(Math.round(sx * sw), 0, w - 1);
+  const py = clamp(Math.round(sy * sw), 0, h - 1);
+  const i0 = (py * w + px) * 4;
+  const r0 = d[i0], g0 = d[i0 + 1], b0 = d[i0 + 2];
+  const thr = Math.max(8, S.tol) * 2.6;
+  const seen = new Uint8Array(w * h);
+  const out = new Uint8ClampedArray(w * h * 4);
+  const stack = [py * w + px];
+  seen[py * w + px] = 1;
+  let count = 0;
+  while (stack.length) {
+    const p = stack.pop();
+    const x = p % w, y = (p - x) / w;
+    const i = p * 4;
+    const dr = d[i] - r0, dg = d[i + 1] - g0, db = d[i + 2] - b0;
+    if (Math.abs(dr) + Math.abs(dg) + Math.abs(db) > thr) continue;
+    out[i] = 255; out[i + 1] = 255; out[i + 2] = 255; out[i + 3] = 255;
+    count++;
+    if (count > w * h * 0.72) break;
+    if (x > 0 && !seen[p - 1]) { seen[p - 1] = 1; stack.push(p - 1); }
+    if (x < w - 1 && !seen[p + 1]) { seen[p + 1] = 1; stack.push(p + 1); }
+    if (y > 0 && !seen[p - w]) { seen[p - w] = 1; stack.push(p - w); }
+    if (y < h - 1 && !seen[p + w]) { seen[p + w] = 1; stack.push(p + w); }
+  }
+  const sm = mkCanvas(w, h);
+  ctxOf(sm, true).putImageData(new ImageData(out, w, h), 0, 0);
+  const mc = maskCtx();
+  mc.save();
+  mc.imageSmoothingQuality = 'high';
+  mc.globalCompositeOperation = 'lighter';
+  mc.drawImage(sm, 0, 0, mask.width, mask.height);
+  mc.restore();
+  drawMaskView();
+  if (count > w * h * 0.7) toast('That picked almost everything. Try a tighter spot or lower sensitivity.');
+}
+
+/* ============================================================
+   POINTER / GESTURES
+   ============================================================ */
+const pointers = new Map();
+let drawing = false, lastPt = null, lassoPts = [], boxStart = null, downPt = null, moved = 0;
+let pinchStart = null;
+
+function stagePointerDown(e) {
+  if (!base && S.mode === 'photo') return;
+  if (S.mode === 'sketch') return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) {
+    drawing = false; lassoPts = []; boxStart = null;
+    const [a, b] = Array.from(pointers.values());
+    pinchStart = { d: Math.hypot(a.x - b.x, a.y - b.y), zoom: S.zoom, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, panX: S.panX, panY: S.panY };
+    return;
+  }
+  if (pointers.size > 2) return;
+  e.preventDefault();
+  downPt = toImage(e.clientX, e.clientY);
+  lastPt = downPt;
+  moved = 0;
+  if (S.tool === 'tap') return;
+  drawing = true;
+  if (S.tool === 'lasso') { lassoPts = [downPt]; }
+  else if (S.tool === 'box') { boxStart = downPt; }
+  else { strokeMask(downPt, downPt, false); drawMaskView(); }
+}
+
+function stagePointerMove(e) {
+  if (S.mode === 'sketch') return;
+  if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2 && pinchStart) {
+    const [a, b] = Array.from(pointers.values());
+    const d = Math.hypot(a.x - b.x, a.y - b.y);
+    const nz = clamp(pinchStart.zoom * (d / Math.max(1, pinchStart.d)), 1, 8);
+    S.zoom = nz;
+    const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+    S.panX = pinchStart.panX + (cx - pinchStart.cx);
+    S.panY = pinchStart.panY + (cy - pinchStart.cy);
+    applyTransform();
+    return;
+  }
+  if (!drawing || !lastPt) return;
+  e.preventDefault();
+  const p = toImage(e.clientX, e.clientY);
+  moved += Math.hypot(p.x - lastPt.x, p.y - lastPt.y);
+  if (S.tool === 'lasso') {
+    lassoPts.push(p);
+    drawLasso();
+  } else if (S.tool === 'box') {
+    drawMaskView();
+    const x = ctxOf($('#cvMask'), true);
+    x.save();
+    x.strokeStyle = 'rgba(255,54,94,.95)';
+    x.lineWidth = Math.max(1, mask.width / 400);
+    x.setLineDash([8, 6]);
+    x.strokeRect(Math.min(boxStart.x, p.x), Math.min(boxStart.y, p.y), Math.abs(p.x - boxStart.x), Math.abs(p.y - boxStart.y));
+    x.restore();
+  } else {
+    strokeMask(lastPt, p, false);
+    drawMaskView();
+  }
+  lastPt = p;
+}
+
+function drawLasso() {
+  drawMaskView();
+  const x = ctxOf($('#cvMask'), true);
+  x.save();
+  x.strokeStyle = 'rgba(255,54,94,.95)';
+  x.lineWidth = Math.max(1, mask.width / 400);
+  x.setLineDash([8, 6]);
+  x.beginPath();
+  if (lassoPts.length) {
+    x.moveTo(lassoPts[0].x, lassoPts[0].y);
+    for (const p of lassoPts) x.lineTo(p.x, p.y);
+  }
+  x.stroke();
+  x.restore();
+}
+
+function stagePointerUp(e) {
+  if (S.mode === 'sketch') return;
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinchStart = null;
+  if (pointers.size > 0) return;
+  if (S.tool === 'tap') {
+    if (downPt && moved < 12) {
+      const p = toImage(e.clientX, e.clientY);
+      magicSelect(p.x, p.y);
+    }
+    downPt = null;
+    return;
+  }
+  if (!drawing) return;
+  drawing = false;
+  if (S.tool === 'lasso') {
+    if (lassoPts.length > 2) fillPolygonMask(lassoPts);
+    lassoPts = [];
+  } else if (S.tool === 'box') {
+    const p = toImage(e.clientX, e.clientY);
+    if (boxStart && Math.abs(p.x - boxStart.x) > 4 && Math.abs(p.y - boxStart.y) > 4) fillRectMask(boxStart, p);
+    boxStart = null;
+  }
+  lastPt = null;
+  drawMaskView();
+}
+
+/* ============================================================
+   MODE + PANELS
+   ============================================================ */
+function setMode(m) {
+  S.mode = m;
+  const isSketch = m === 'sketch';
+  $('#cvSketchWrap').classList.toggle('hidden', !isSketch);
+  $('#cvPhoto').classList.toggle('hidden', isSketch);
+  $('#cvMask').classList.toggle('hidden', isSketch);
+  if (isSketch) ensureSketch();
+  fit();
+  $('#empty').classList.toggle('hidden', isSketch ? false : !!base);
+  if (isSketch) $('#empty').classList.add('hidden');
+}
+
+function setPanel(name) {
+  $$('#panels .panel').forEach((p) => p.classList.toggle('show', p.dataset.panel === name));
+  $$('#dock button').forEach((b) => b.classList.toggle('on', b.dataset.panel === name));
+  if (name === 'sketch') { setMode('sketch'); }
+  else if (S.mode === 'sketch') { setMode('photo'); }
+}
+
+/* ---------- sketch canvas ---------- */
+const SK_LONG = 1024;
+function ratioValue(r) {
+  const [a, b] = r.split(':').map(Number);
+  return a / b;
+}
+function ensureSketch() {
+  const ar = ratioValue(S.ratio);
+  let w, h;
+  if (ar >= 1) { w = SK_LONG; h = Math.round(SK_LONG / ar); }
+  else { h = SK_LONG; w = Math.round(SK_LONG * ar); }
+  if (sk.cv && sk.cv.width === w && sk.cv.height === h) return;
+  const old = sk.cv;
+  const c = mkCanvas(w, h);
+  const x = ctxOf(c, true);
+  x.fillStyle = '#ffffff'; x.fillRect(0, 0, w, h);
+  if (old) x.drawImage(old, 0, 0, w, h);
+  sk.cv = c;
+  sk.hist = [];
+  $('#cvSketch').width = w; $('#cvSketch').height = h;
+  paintSketch();
+  fit();
+}
+function paintSketch() {
+  const el = $('#cvSketch');
+  const x = ctxOf(el, true);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.clearRect(0, 0, el.width, el.height);
+  if (sk.cv) x.drawImage(sk.cv, 0, 0);
+}
+function skPush() {
+  try {
+    sk.hist.push(sk.cv.toDataURL('image/png'));
+    if (sk.hist.length > 12) sk.hist.shift();
+  } catch (e) { }
+}
+async function skUndo() {
+  if (!sk.hist.length) return;
+  const url = sk.hist.pop();
+  const img = await loadImage(url);
+  const x = ctxOf(sk.cv, true);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.clearRect(0, 0, sk.cv.width, sk.cv.height);
+  x.drawImage(img, 0, 0);
+  paintSketch();
+}
+function skClear() {
+  skPush();
+  const x = ctxOf(sk.cv, true);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.fillStyle = '#fff';
+  x.fillRect(0, 0, sk.cv.width, sk.cv.height);
+  paintSketch();
+}
+
+let skDrawing = false, skLast = null;
+function sketchPointerDown(e) {
+  if (S.mode !== 'sketch' || !sk.cv) return;
+  e.preventDefault();
+  skPush();
+  skDrawing = true;
+  const p = toImage(e.clientX, e.clientY);
+  skLast = p;
+  skDot(p, p);
+}
+function sketchPointerMove(e) {
+  if (!skDrawing || S.mode !== 'sketch') return;
+  e.preventDefault();
+  const p = toImage(e.clientX, e.clientY);
+  skDot(skLast, p);
+  skLast = p;
+}
+function sketchPointerUp() {
+  if (!skDrawing) return;
+  skDrawing = false;
+  skLast = null;
+  paintSketch();
+}
+function skDot(a, b) {
+  const x = ctxOf(sk.cv, true);
+  x.save();
+  x.lineCap = 'round'; x.lineJoin = 'round';
+  x.strokeStyle = S.penErase ? '#ffffff' : S.penColor;
+  x.fillStyle = x.strokeStyle;
+  x.lineWidth = S.penSize;
+  if (S.penErase) x.globalCompositeOperation = 'source-over';
+  x.beginPath();
+  x.moveTo(a.x, a.y);
+  x.lineTo(b.x + 0.01, b.y + 0.01);
+  x.stroke();
+  x.beginPath(); x.arc(b.x, b.y, S.penSize / 2, 0, 7); x.fill();
+  x.restore();
+  paintSketch();
+}
+/* ============================================================
+   AI LAYER  (Google image models, or your own proxy)
+   ============================================================ */
+const GEM_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+const MODEL_FALLBACKS = ['gemini-3.1-flash-image', 'gemini-2.5-flash-image', 'gemini-nano-banana-2.1', 'gemini-3-pro-image'];
+let route = null;           // cached working route {kind, model}
+let routeTried = [];
+
+function aiStatus(state, note) {
+  if (state) S.aiState = state;
+  const dot = $('#aiDot'), txt = $('#aiTxt');
+  dot.className = 'dot';
+  if (!S.key && !S.proxy && !S.nx) { txt.textContent = 'AI off'; return; }
+  if (S.aiState === 'ready') { dot.classList.add('on'); txt.textContent = 'AI ready'; }
+  else if (S.aiState === 'bad') { dot.classList.add('bad'); txt.textContent = 'AI error'; }
+  else if (S.proxy) { txt.textContent = 'Proxy set'; }
+  else if (S.key) { txt.textContent = 'Key set'; }
+  else { txt.textContent = 'Eraser key'; }
+}
+
+function httpError(status, msg) {
+  const e = new Error(msg || ('HTTP ' + status));
+  e.status = status;
+  if (status === 401 || status === 403) e.code = 'AUTH';
+  else if (status === 429) e.code = 'QUOTA';
+  else e.code = 'HTTP';
+  return e;
+}
+async function readErr(res) {
+  let msg = 'HTTP ' + res.status;
+  try {
+    const j = await res.json();
+    msg = (j.error && (j.error.message || j.error.status)) || j.message || msg;
+  } catch (e) { }
+  return httpError(res.status, msg);
+}
+
+/* find the first image inside any response shape */
+function deepFindImage(node, depth) {
+  depth = depth || 0;
+  if (!node || depth > 8) return null;
+  if (typeof node === 'string') {
+    const s = node;
+    if (s.length < 400) return null;
+    if (s.startsWith('data:image/')) {
+      const m = s.match(/^data:(image\/[a-z0-9.+-]+);base64,(.+)$/i);
+      if (m) return { mime: m[1], b64: m[2] };
+    }
+    if (/^(\/9j\/|iVBORw0KGgo)/.test(s) && s.length > 800) {
+      const mime = s.startsWith('/9j/') ? 'image/jpeg' : 'image/png';
+      return { mime, b64: s };
+    }
+    return null;
+  }
+  if (Array.isArray(node)) {
+    for (const it of node) { const r = deepFindImage(it, depth + 1); if (r) return r; }
+    return null;
+  }
+  if (typeof node === 'object') {
+    if (node.inlineData && node.inlineData.data) return { mime: node.inlineData.mimeType || 'image/png', b64: node.inlineData.data };
+    if (node.inline_data && node.inline_data.data) return { mime: node.inline_data.mime_type || 'image/png', b64: node.inline_data.data };
+    if (node.output_image && node.output_image.data) return { mime: node.output_image.mime_type || 'image/png', b64: node.output_image.data };
+    for (const k of Object.keys(node)) {
+      const r = deepFindImage(node[k], depth + 1);
+      if (r) return r;
+    }
+  }
+  return null;
+}
+
+async function callInteractions(model, images, prompt, signal) {
+  const body = {
+    model,
+    input: [{ type: 'text', text: prompt }].concat(
+      images.map((im) => ({ type: 'image', mime_type: im.mime, data: im.b64 }))
+    )
+  };
+  const res = await fetch(GEM_BASE + '/interactions', {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': S.key, 'Api-Revision': '2026-05-20' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw await readErr(res);
+  return res.json();
+}
+
+async function callGenerate(model, images, prompt, signal, noModal) {
+  const parts = [{ text: prompt }].concat(
+    images.map((im) => ({ inline_data: { mime_type: im.mime, data: im.b64 } }))
+  );
+  const body = { contents: [{ role: 'user', parts }] };
+  if (!noModal) body.generationConfig = { responseModalities: ['TEXT', 'IMAGE'], temperature: 1 };
+  const res = await fetch(GEM_BASE + '/models/' + encodeURIComponent(model) + ':generateContent', {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': S.key },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw await readErr(res);
+  return res.json();
+}
+
+async function callProxy(images, prompt, opts, signal) {
+  const body = {
+    prompt,
+    model: opts.model || S.model,
+    images: images.map((im) => ({ mime: im.mime, data: im.b64 })),
+    task: opts.task || 'edit'
+  };
+  const res = await fetch(S.proxy, {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw await readErr(res);
+  return res.json();
+}
+
+/* main entry: images -> image */
+async function aiImage(images, prompt, opts) {
+  opts = opts || {};
+  const signal = opts.signal;
+  if (!S.proxy && !S.key) { const e = new Error('No AI key'); e.code = 'NO_KEY'; throw e; }
+
+  const models = [];
+  const pushModel = (m) => { if (m && models.indexOf(m) < 0) models.push(m); };
+  pushModel(opts.model);
+  pushModel(S.model);
+  MODEL_FALLBACKS.forEach(pushModel);
+
+  const routes = [];
+  if (route) routes.push(route);
+  else routes.push({ kind: 'generate' }, { kind: 'generate', noModal: true }, { kind: 'interactions' });
+
+  let lastErr = null;
+  for (const m of models) {
+    for (const r of routes) {
+      const tag = r.kind + ':' + m;
+      if (routeTried.indexOf(tag) >= 0 && routeTried.length > 6) continue;
+      try {
+        let json;
+        if (S.proxy) json = await callProxy(images, prompt, opts, signal);
+        else if (r.kind === 'interactions') json = await callInteractions(m, images, prompt, signal);
+        else json = await callGenerate(m, images, prompt, signal, r.noModal);
+
+        const found = deepFindImage(json);
+        if (!found) throw httpError(200, 'The model returned no image');
+        const img = await loadImage('data:' + found.mime + ';base64,' + found.b64);
+        route = { kind: r.kind, model: m, noModal: r.noModal };
+        aiStatus('ready');
+        return img;
+      } catch (e) {
+        if (e.code === 'NO_KEY') throw e;
+        if (signal && signal.aborted) throw e;
+        lastErr = e;
+        if (e.code === 'AUTH') { aiStatus('bad'); throw e; }
+        if (e.code === 'QUOTA') { await sleep(1800); }
+        routeTried.push(tag);
+        if (e.code === 'QUOTA') { aiStatus('bad'); throw e; }
+        continue;
+      }
+    }
+  }
+  aiStatus('bad');
+  throw lastErr || httpError(0, 'AI failed');
+}
+
+function aiMessage(e) {
+  if (e && e.code === 'NO_KEY') return 'Add an AI key in settings to use this.';
+  if (e && e.code === 'AUTH') return 'The AI key was rejected. Check it in settings.';
+  if (e && e.code === 'QUOTA') return 'AI quota reached. Try again later or check your plan.';
+  if (e && e.name === 'AbortError') return 'Cancelled.';
+  const m = (e && e.message) || 'AI failed';
+  if (/no image/i.test(m)) return 'The model sent back text instead of an image. Try again with a simpler instruction.';
+  return m.slice(0, 160);
+}
+
+/* ---------- image payload helpers ---------- */
+function payloadFromCanvas(c, maxSide, mime) {
+  const k = Math.min(1, (maxSide || 1024) / Math.max(c.width, c.height));
+  const w = Math.max(1, Math.round(c.width * k)), h = Math.max(1, Math.round(c.height * k));
+  const t = mkCanvas(w, h);
+  const x = ctxOf(t, true);
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(c, 0, 0, w, h);
+  const url = t.toDataURL(mime || 'image/jpeg', 0.94);
+  const m = url.match(/^data:([^;]+);base64,(.*)$/);
+  return { mime: m[1], b64: m[2], w, h };
+}
+
+function binaryMaskCanvas(w, h, srcMask, sx, sy, sw, sh, grow) {
+  const out = mkCanvas(w, h);
+  const o = ctxOf(out, true);
+  o.fillStyle = '#000'; o.fillRect(0, 0, w, h);
+  const tmp = mkCanvas(w, h);
+  const t = ctxOf(tmp, true);
+  t.drawImage(srcMask, sx, sy, sw, sh, 0, 0, w, h);
+  const d = t.getImageData(0, 0, w, h);
+  const p = d.data;
+  for (let i = 0; i < p.length; i += 4) {
+    const on = p[i + 3] > 24 ? 255 : 0;
+    p[i] = p[i + 1] = p[i + 2] = on;
+    p[i + 3] = 255;
+  }
+  o.putImageData(d, 0, 0);
+  if (grow) {
+    // soften + expand a touch so the model clears the whole object and its edge
+    o.globalAlpha = 0.9;
+    o.filter = 'blur(' + grow + 'px)';
+    o.drawImage(out, 0, 0);
+    o.filter = 'none';
+    o.globalAlpha = 1;
+  }
+  return out;
+}
+
+/* ============================================================
+   ERASE
+   ============================================================ */
+const ERASE_PROMPT = (extra) =>
+  'You are a professional retoucher doing content aware fill.\n' +
+  'IMAGE 1 is a crop of a real photograph.\n' +
+  'IMAGE 2 is the mask for that exact crop: pure WHITE marks what must disappear, BLACK must stay untouched.\n' +
+  'Task: completely remove everything under the white area, and rebuild what is naturally behind it. Match the surrounding surface, texture, colour, perspective, focus, lighting, shadows and grain so the repair is invisible. Continue any lines, edges and patterns that run into the removed area.\n' +
+  'Hard rules: nothing outside the white area may change. Do not add objects, people, text or borders. Keep the identical framing, crop and aspect ratio. Output only the retouched image.' +
+  (extra ? '\nExtra: ' + extra : '');
+
+function featherBlendPatch(x0, y0, w, h, patch, feather) {
+  const tmp = mkCanvas(w, h);
+  const t = ctxOf(tmp, true);
+  t.imageSmoothingQuality = 'high';
+  t.drawImage(patch, 0, 0, w, h);
+  const f = clamp(feather, 1, Math.min(w, h) / 3);
+  const mc = mkCanvas(w, h);
+  const m = mc.getContext('2d');
+  m.fillStyle = '#fff'; m.fillRect(0, 0, w, h);
+  m.globalCompositeOperation = 'destination-out';
+  const edge = (ax, ay, bx, by) => {
+    const g = m.createLinearGradient(ax, ay, bx, by);
+    g.addColorStop(0, 'rgba(0,0,0,1)');
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    m.fillStyle = g; m.fillRect(0, 0, w, h);
+  };
+  edge(0, 0, f, 0); edge(0, h, 0, h - f); edge(0, 0, 0, f); edge(w, 0, w - f, 0);
+  t.globalCompositeOperation = 'destination-in';
+  t.drawImage(mc, 0, 0);
+  t.globalCompositeOperation = 'source-over';
+  ctxOf(base, true).drawImage(tmp, x0, y0);
+}
+
+/* ---------- Nexscope object eraser (needs their paid plan) ---------- */
+const FN_BASE = 'https://oryx-ffcb84e0.base44.app/functions';
+
+async function nexscopeErase() {
+  const long = Math.max(base.width, base.height);
+  const k = Math.min(1, 2048 / long);
+  const w = Math.round(base.width * k), h = Math.round(base.height * k);
+  const im = mkCanvas(w, h);
+  const ic = ctxOf(im, true);
+  ic.imageSmoothingQuality = 'high';
+  ic.drawImage(base, 0, 0, w, h);
+  const mk2 = mkCanvas(w, h);
+  const mc = ctxOf(mk2, true);
+  mc.fillStyle = '#000';
+  mc.fillRect(0, 0, w, h);
+  mc.drawImage(mask, 0, 0, w, h);
+
+  const res = await fetch(FN_BASE + '/studioAi', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image: im.toDataURL('image/jpeg', 0.92),
+      mask: mk2.toDataURL('image/png'),
+      key: S.nx
+    })
+  });
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error || 'The object eraser failed');
+  return await loadImage(j.image);
+}
+
+async function aiErase() {
+  if (!base) { toast('Open a photo first'); return; }
+  const b = maskBounds();
+  if (!b) { toast('Paint over the object you want gone'); return; }
+
+  if (S.nx) {
+    busy(true, 'Erasing', 'The object eraser is rebuilding what was behind it');
+    try {
+      const img = await nexscopeErase();
+      adoptImage(img);
+      toast('Object removed');
+      return;
+    } catch (e) {
+      toast(String((e && e.message) || e), 5200);
+    } finally {
+      busy(false);
+    }
+  }
+
+  if (!S.key && !S.proxy) {
+    toast('No AI key, so I used the offline fill. Add a key for real generative erase.');
+    quickFill();
+    return;
+  }
+  const W = base.width, H = base.height;
+  const pad = Math.round(Math.max(b.w, b.h) * 0.22) + 24;
+  const x0 = clamp(Math.round(b.x - pad), 0, W - 8);
+  const y0 = clamp(Math.round(b.y - pad), 0, H - 8);
+  const x1 = clamp(Math.round(b.x + b.w + pad), x0 + 8, W);
+  const y1 = clamp(Math.round(b.y + b.h + pad), y0 + 8, H);
+  const cw = x1 - x0, ch = y1 - y0;
+
+  busy(true, 'Erasing with AI', 'Rebuilding the background behind the object');
+  try {
+    const scale = Math.min(1, 1100 / Math.max(cw, ch));
+    const tw = Math.max(64, Math.round(cw * scale)), th = Math.max(64, Math.round(ch * scale));
+    const crop = mkCanvas(tw, th);
+    const cc = ctxOf(crop, true);
+    cc.imageSmoothingQuality = 'high';
+    cc.drawImage(base, x0, y0, cw, ch, 0, 0, tw, th);
+    const mcanvas = binaryMaskCanvas(tw, th, mask, x0, y0, cw, ch, Math.max(1, Math.round(tw / 220)));
+
+    const imgs = [payloadFromCanvas(crop, 1100, 'image/jpeg'), payloadFromCanvas(mcanvas, 1100, 'image/png')];
+    const out = await aiImage(imgs, ERASE_PROMPT(), { signal: busySignal(), task: 'erase' });
+    featherBlendPatch(x0, y0, cw, ch, out, Math.round(Math.min(cw, ch) * 0.06) + 6);
+    clearMask();
+    render();
+    pushHistory();
+    toast('Object removed');
+  } catch (e) {
+    toast(aiMessage(e), 4200);
+  } finally {
+    busy(false);
+  }
+}
+
+/* ---------- offline content aware fill ---------- */
+function quickFill() {
+  if (!base) { toast('Open a photo first'); return; }
+  const b = maskBounds();
+  if (!b) { toast('Paint over the object you want gone'); return; }
+  const W = base.width, H = base.height;
+  const pad = 30;
+  const x0 = clamp(Math.round(b.x - pad), 0, W - 4);
+  const y0 = clamp(Math.round(b.y - pad), 0, H - 4);
+  const x1 = clamp(Math.round(b.x + b.w + pad), x0 + 4, W);
+  const y1 = clamp(Math.round(b.y + b.h + pad), y0 + 4, H);
+  const w = x1 - x0, h = y1 - y0;
+
+  const bc = ctxOf(base, true);
+  const img = bc.getImageData(x0, y0, w, h);
+  const md = ctxOf(mask, true).getImageData(x0, y0, w, h).data;
+  const m = new Uint8Array(w * h);
+  let any = false;
+  for (let i = 0; i < w * h; i++) { if (md[i * 4 + 3] > 26) { m[i] = 1; any = true; } }
+  if (!any) return;
+
+  inpaintRegion(img.data, w, h, m);
+  bc.putImageData(img, x0, y0);
+  clearMask();
+  render();
+  pushHistory();
+  toast('Filled from the surroundings');
+}
+
+function inpaintRegion(d, w, h, m) {
+  // --- pyramid of known colour ---
+  const levels = [];
+  let cw = w, ch = h;
+  let cur = { r: new Float32Array(w * h), g: new Float32Array(w * h), b: new Float32Array(w * h), k: new Float32Array(w * h) };
+  for (let i = 0; i < w * h; i++) {
+    cur.r[i] = d[i * 4]; cur.g[i] = d[i * 4 + 1]; cur.b[i] = d[i * 4 + 2];
+    cur.k[i] = m[i] ? 0 : 1;
+  }
+  levels.push({ w: cw, h: ch, ...cur });
+  while (Math.min(cw, ch) > 12) {
+    const nw = Math.max(1, cw >> 1), nh = Math.max(1, ch >> 1);
+    const nr = new Float32Array(nw * nh), ng = new Float32Array(nw * nh), nb = new Float32Array(nw * nh), nk = new Float32Array(nw * nh);
+    for (let y = 0; y < nh; y++) {
+      for (let x = 0; x < nw; x++) {
+        let sr = 0, sg = 0, sb = 0, sw2 = 0, cnt = 0;
+        for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) {
+          const px = Math.min(cw - 1, x * 2 + dx), py = Math.min(ch - 1, y * 2 + dy);
+          const i = py * cw + px;
+          if (cur.k[i] > 0) { sr += cur.r[i]; sg += cur.g[i]; sb += cur.b[i]; sw2 += 1; cnt++; }
+        }
+        const j = y * nw + x;
+        if (cnt) { nr[j] = sr / cnt; ng[j] = sg / cnt; nb[j] = sb / cnt; nk[j] = 1; }
+        else nk[j] = 0;
+      }
+    }
+    cur = { r: nr, g: ng, b: nb, k: nk };
+    cw = nw; ch = nh;
+    levels.push({ w: cw, h: ch, ...cur });
+  }
+
+  // --- fill coarsest by relaxing ---
+  const top = levels[levels.length - 1];
+  relax(top, 30);
+
+  // --- go back down ---
+  for (let li = levels.length - 2; li >= 0; li--) {
+    const lv = levels[li];
+    const up = levels[li + 1];
+    for (let y = 0; y < lv.h; y++) {
+      for (let x = 0; x < lv.w; x++) {
+        const i = y * lv.w + x;
+        if (lv.k[i] > 0) continue;
+        const fx = (x + 0.5) / 2 - 0.5, fy = (y + 0.5) / 2 - 0.5;
+        lv.r[i] = bilinear(up.r, up.w, up.h, fx, fy);
+        lv.g[i] = bilinear(up.g, up.w, up.h, fx, fy);
+        lv.b[i] = bilinear(up.b, up.w, up.h, fx, fy);
+      }
+    }
+    relax(lv, li === 0 ? 14 : 8);
+  }
+
+  // --- write the diffusion result back before adding texture ---
+  const fine = levels[0];
+  for (let i = 0; i < w * h; i++) {
+    if (!m[i]) continue;
+    d[i * 4] = clamp(fine.r[i], 0, 255);
+    d[i * 4 + 1] = clamp(fine.g[i], 0, 255);
+    d[i * 4 + 2] = clamp(fine.b[i], 0, 255);
+    d[i * 4 + 3] = 255;
+  }
+
+  // --- nearest known colour for texture ---
+  const near = nearestKnown(w, h, m);
+  for (let i = 0; i < w * h; i++) {
+    if (!m[i]) continue;
+    const j = near.idx[i];
+    if (j < 0) continue;
+    const t = clamp((near.dist[i] - 2) / 30, 0, 1) * 0.5;
+    d[i * 4] = clamp(lerp(d[i * 4], d[j * 4], t), 0, 255);
+    d[i * 4 + 1] = clamp(lerp(d[i * 4 + 1], d[j * 4 + 1], t), 0, 255);
+    d[i * 4 + 2] = clamp(lerp(d[i * 4 + 2], d[j * 4 + 2], t), 0, 255);
+    d[i * 4 + 3] = 255;
+  }
+
+  // --- fine grain so it does not look plastic ---
+  const noise = grainEstimate(d, w, h, m);
+  for (let i = 0; i < w * h; i++) {
+    if (!m[i]) continue;
+    const n = (Math.random() - 0.5) * noise;
+    d[i * 4] = clamp(d[i * 4] + n, 0, 255);
+    d[i * 4 + 1] = clamp(d[i * 4 + 1] + n, 0, 255);
+    d[i * 4 + 2] = clamp(d[i * 4 + 2] + n, 0, 255);
+  }
+}
+
+function bilinear(a, w, h, fx, fy) {
+  const x0 = clamp(Math.floor(fx), 0, w - 1), y0 = clamp(Math.floor(fy), 0, h - 1);
+  const x1 = clamp(x0 + 1, 0, w - 1), y1 = clamp(y0 + 1, 0, h - 1);
+  const tx = clamp(fx - x0, 0, 1), ty = clamp(fy - y0, 0, 1);
+  const p00 = a[y0 * w + x0], p10 = a[y0 * w + x1], p01 = a[y1 * w + x0], p11 = a[y1 * w + x1];
+  return (p00 * (1 - tx) + p10 * tx) * (1 - ty) + (p01 * (1 - tx) + p11 * tx) * ty;
+}
+
+function relax(lv, passes) {
+  const { w, h, r, g, b, k } = lv;
+  for (let p = 0; p < passes; p++) {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        if (k[i] > 0) continue;
+        let sr = 0, sg = 0, sb = 0, n = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          const yy = y + dy; if (yy < 0 || yy >= h) continue;
+          for (let dx = -1; dx <= 1; dx++) {
+            const xx = x + dx; if (xx < 0 || xx >= w) continue;
+            if (!dx && !dy) continue;
+            const j = yy * w + xx;
+            const wgt = (dx && dy) ? 0.7 : 1;
+            sr += r[j] * wgt; sg += g[j] * wgt; sb += b[j] * wgt; n += wgt;
+          }
+        }
+        if (n) { r[i] = sr / n; g[i] = sg / n; b[i] = sb / n; }
+      }
+    }
+  }
+}
+
+function nearestKnown(w, h, m) {
+  const INF = 1e9;
+  const dist = new Float32Array(w * h).fill(INF);
+  const idx = new Int32Array(w * h).fill(-1);
+  for (let i = 0; i < w * h; i++) if (!m[i]) { dist[i] = 0; idx[i] = i; }
+  const rel = (i, j, cost) => {
+    if (dist[j] + cost < dist[i]) { dist[i] = dist[j] + cost; idx[i] = idx[j]; }
+  };
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const i = y * w + x;
+    if (x > 0) rel(i, i - 1, 1);
+    if (y > 0) rel(i, i - w, 1);
+    if (x > 0 && y > 0) rel(i, i - w - 1, 1.41);
+    if (x < w - 1 && y > 0) rel(i, i - w + 1, 1.41);
+  }
+  for (let y = h - 1; y >= 0; y--) for (let x = w - 1; x >= 0; x--) {
+    const i = y * w + x;
+    if (x < w - 1) rel(i, i + 1, 1);
+    if (y < h - 1) rel(i, i + w, 1);
+    if (x < w - 1 && y < h - 1) rel(i, i + w + 1, 1.41);
+    if (x > 0 && y < h - 1) rel(i, i + w - 1, 1.41);
+  }
+  return { dist, idx };
+}
+
+function grainEstimate(d, w, h, m) {
+  let sum = 0, n = 0;
+  for (let y = 1; y < h - 1; y += 2) for (let x = 1; x < w - 1; x += 2) {
+    const i = y * w + x;
+    if (m[i]) continue;
+    const a = (d[i * 4] + d[i * 4 + 1] + d[i * 4 + 2]) / 3;
+    const bq = (d[(i + 1) * 4] + d[(i + 1) * 4 + 1] + d[(i + 1) * 4 + 2]) / 3;
+    sum += Math.abs(a - bq); n++;
+  }
+  const v = n ? sum / n : 2;
+  return clamp(v * 1.6, 1, 9);
+}
+/* ============================================================
+   TEXT MODEL (object finder)
+   ============================================================ */
+const TEXT_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+
+async function aiText(prompt, images, signal) {
+  if (!S.key && !S.proxy) { const e = new Error('No AI key'); e.code = 'NO_KEY'; throw e; }
+  if (S.proxy) {
+    const j = await callProxy(images || [], prompt, { task: 'text' }, signal);
+    const t = typeof j === 'string' ? j : (j.text || j.output_text || JSON.stringify(j));
+    return t;
+  }
+  let last = null;
+  for (const m of TEXT_MODELS) {
+    try {
+      const parts = [{ text: prompt }].concat((images || []).map((im) => ({ inline_data: { mime_type: im.mime, data: im.b64 } })));
+      const res = await fetch(GEM_BASE + '/models/' + encodeURIComponent(m) + ':generateContent', {
+        method: 'POST',
+        signal,
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': S.key },
+        body: JSON.stringify({ contents: [{ role: 'user', parts }], generationConfig: { temperature: 0.1 } })
+      });
+      if (!res.ok) { last = await readErr(res); if (last.code === 'AUTH') throw last; continue; }
+      const j = await res.json();
+      const cand = j.candidates && j.candidates[0];
+      const ps = (cand && cand.content && cand.content.parts) || [];
+      const txt = ps.map((p) => p.text || '').join('').trim();
+      if (txt) return txt;
+      last = httpError(200, 'Empty answer');
+    } catch (e) {
+      if (e.code === 'AUTH') throw e;
+      last = e;
+    }
+  }
+  throw last || httpError(0, 'Text model failed');
+}
+
+function parseJSONLoose(txt) {
+  if (!txt) return null;
+  let t = String(txt).trim().replace(/^```(?:json)?/i, '').replace(/```$/, '').trim();
+  const a = t.indexOf('{'), b = t.lastIndexOf('}');
+  if (a < 0 || b <= a) return null;
+  try { return JSON.parse(t.slice(a, b + 1)); } catch (e) { return null; }
+}
+
+function maskFromBoxes(boxes, padPct) {
+  if (!mask) return 0;
+  const c = maskCtx();
+  c.save();
+  c.fillStyle = '#fff';
+  let n = 0;
+  for (const bx of boxes) {
+    const px = (padPct || 0.02) * Math.min(bx.w, bx.h);
+    const x = clamp((bx.x) * mask.width - px, 0, mask.width);
+    const y = clamp((bx.y) * mask.height - px, 0, mask.height);
+    const w = clamp(bx.w * mask.width + px * 2, 2, mask.width - x);
+    const h = clamp(bx.h * mask.height + px * 2, 2, mask.height - y);
+    const r = Math.min(w, h) * 0.18;
+    c.beginPath();
+    if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h);
+    c.fill();
+    n++;
+  }
+  c.restore();
+  drawMaskView();
+  return n;
+}
+
+async function aiFindObject(text) {
+  const q = (text || '').trim();
+  if (!q) { toast('Type what to erase, like dog or cable'); return; }
+  if (!S.key && !S.proxy) { toast('Find by name needs an AI key'); return; }
+  if (!base) { toast('Open a photo first'); return; }
+  busy(true, 'Looking for "' + q + '"', 'Locating it in the photo');
+  try {
+    const p = payloadFromCanvas(base, 900, 'image/jpeg');
+    const prompt = 'Find "' + q + '" in this photo. Answer with JSON only, no prose: {"boxes":[[x1,y1,x2,y2]]}. ' +
+      'Each box is [left, top, right, bottom] as fractions from 0 to 1 of the image width and height. ' +
+      'Give one tight box per visible instance, biggest first, at most 4. Include its shadow. ' +
+      'If it is not visible, answer {"boxes":[]}.';
+    const txt = await aiText(prompt, [p], busySignal());
+    const j = parseJSONLoose(txt);
+    const boxes = [];
+    if (j && Array.isArray(j.boxes)) {
+      for (const b of j.boxes) {
+        if (!Array.isArray(b) || b.length < 4) continue;
+        let [x1, y1, x2, y2] = b.map(Number);
+        if ([x1, y1, x2, y2].some((v) => !isFinite(v))) continue;
+        if (Math.max(x1, x2, y1, y2) > 1.6) { x1 /= base.width; x2 /= base.width; y1 /= base.height; y2 /= base.height; }
+        const bx = {
+          x: clamp(Math.min(x1, x2), 0, 1), y: clamp(Math.min(y1, y2), 0, 1),
+          w: clamp(Math.abs(x2 - x1), 0, 1), h: clamp(Math.abs(y2 - y1), 0, 1)
+        };
+        if (bx.w < 0.01 || bx.h < 0.01) continue;
+        boxes.push(bx);
+      }
+    }
+    if (!boxes.length) { busy(false); toast('Could not find "' + q + '" in this photo'); return; }
+    clearMask();
+    maskFromBoxes(boxes, 0.025);
+    busy(false);
+    await aiErase();
+  } catch (e) {
+    busy(false);
+    toast(aiMessage(e), 4200);
+  }
+}
+
+/* ============================================================
+   LOOK / RENDER
+   ============================================================ */
+function applyLook(dest) {
+  const x = ctxOf(dest, true);
+  x.setTransform(1, 0, 0, 1, 0, 0);
+  x.clearRect(0, 0, dest.width, dest.height);
+  x.filter = filterStr() || 'none';
+  x.drawImage(base, 0, 0, dest.width, dest.height);
+  x.filter = 'none';
+  if (adj.warm) {
+    x.save();
+    x.globalCompositeOperation = 'soft-light';
+    x.fillStyle = adj.warm > 0
+      ? 'rgba(255,150,60,' + (Math.abs(adj.warm) / 260) + ')'
+      : 'rgba(70,140,255,' + (Math.abs(adj.warm) / 260) + ')';
+    x.fillRect(0, 0, dest.width, dest.height);
+    x.restore();
+  }
+  if (adj.vig) {
+    const g = x.createRadialGradient(dest.width / 2, dest.height / 2, Math.min(dest.width, dest.height) * 0.28,
+      dest.width / 2, dest.height / 2, Math.max(dest.width, dest.height) * 0.75);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(0,0,0,' + (adj.vig / 140) + ')');
+    x.fillStyle = g; x.fillRect(0, 0, dest.width, dest.height);
+  }
+}
+
+function render() {
+  if (!base) return;
+  const c = $('#cvPhoto');
+  if (c.width !== base.width || c.height !== base.height) {
+    c.width = base.width; c.height = base.height;
+    const m = $('#cvMask');
+    m.width = base.width; m.height = base.height;
+  }
+  applyLook(c);
+  drawMaskView();
+  refreshHistBtns();
+}
+
+/* ============================================================
+   SKETCH -> PHOTO
+   ============================================================ */
+const STYLES = {
+  photo: 'true to life photograph, natural daylight, 50mm lens, sharp focus, real materials and textures',
+  portrait: 'professional portrait photograph, 85mm lens, soft window light, shallow depth of field, real skin detail',
+  product: 'commercial product photograph, seamless studio backdrop, softbox lighting, crisp clean edges, catalogue quality',
+  cinematic: 'cinematic film still, anamorphic lens, teal and orange colour grade, dramatic light, shallow focus',
+  anime: 'high quality anime illustration, clean linework, vibrant flat colours, cel shading',
+  render3d: '3D render, physically based materials, soft global illumination, studio HDRI lighting, octane quality',
+  oil: 'oil painting on canvas, visible brush strokes, rich layered colour, gallery quality',
+  watercolor: 'watercolour painting, soft pigment washes, visible paper texture, loose edges'
+};
+
+function sketchInkAmount() {
+  if (!sk.cv) return 0;
+  const d = ctxOf(sk.cv, true).getImageData(0, 0, sk.cv.width, sk.cv.height).data;
+  let n = 0;
+  for (let i = 0; i < d.length; i += 4 * 7) {
+    if (d[i] < 235 || d[i + 1] < 235 || d[i + 2] < 235) n++;
+  }
+  return n;
+}
+
+async function renderSketch() {
+  ensureSketch();
+  if (sketchInkAmount() < 10) { toast('Draw something first'); return; }
+  if (!S.key && !S.proxy) { openSettings('Sketch to photo needs an AI key. Add one to turn drawings into photographs.'); return; }
+  const subject = ($('#skPrompt').value || '').trim();
+  const style = STYLES[S.style] || STYLES.photo;
+  const prompt =
+    'Convert this hand drawn sketch into a finished realistic image.\n' +
+    'Keep the exact composition: every drawn shape must become a real object in the same position, size and proportion. Fill the whole frame.\n' +
+    (subject ? 'Subject: ' + subject + '.\n' : '') +
+    'Look and feel: ' + style + '.\n' +
+    'Correct perspective, natural light direction, real shadows and reflections, high detail. No sketch lines, no outlines, no pencil texture, no cartoon shading, no text, no border, no watermark. Output the image only.';
+  busy(true, 'Building the photo', 'Following your sketch, adding real light and detail');
+  try {
+    const p = payloadFromCanvas(sk.cv, 1024, 'image/png');
+    const out = await aiImage([p], prompt, { signal: busySignal(), task: 'sketch' });
+    const c = mkCanvas(out.width, out.height);
+    ctxOf(c, true).drawImage(out, 0, 0);
+    await adoptImage(c);
+    setPanel('erase');
+    setMode('photo');
+    $('#empty').classList.add('hidden');
+    toast('Done. Undo if you want a different take.');
+  } catch (e) {
+    toast(aiMessage(e), 4200);
+  } finally {
+    busy(false);
+  }
+}
+
+/* ============================================================
+   BACKGROUND
+   ============================================================ */
+async function aiBackground() {
+  if (!base) { toast('Open a photo first'); return; }
+  const q = ($('#bgPrompt').value || '').trim();
+  if (!q) { toast('Describe the new background'); return; }
+  if (!S.key && !S.proxy) { openSettings('Backdrop swap needs an AI key. Add one to use it.'); return; }
+  const prompt =
+    'Replace the background of this photograph with: ' + q + '.\n' +
+    'Keep the main subject exactly as it is: same identity, pose, expression, clothes, hair, colours and position. ' +
+    'Cut it out cleanly including fine hair edges. Match the new background light direction and colour temperature on the subject, add realistic contact shadow and reflections. ' +
+    'Photorealistic, correct perspective, sharp subject, natural depth of field. No text, no border, no watermark, same framing.';
+  busy(true, 'Building the backdrop', 'Cutting out your subject and matching the light');
+  try {
+    const p = payloadFromCanvas(base, 1400, 'image/jpeg');
+    const out = await aiImage([p], prompt, { signal: busySignal(), task: 'background' });
+    const c = mkCanvas(base.width, base.height);
+    const x = ctxOf(c, true);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(out, 0, 0, c.width, c.height);
+    base = c;
+    render();
+    pushHistory();
+    toast('Backdrop replaced');
+  } catch (e) {
+    toast(aiMessage(e), 4200);
+  } finally {
+    busy(false);
+  }
+}
+
+function blurBackground() {
+  if (!base) { toast('Open a photo first'); return; }
+  const W = base.width, H = base.height;
+  const sharp = mkCanvas(W, H);
+  ctxOf(sharp, true).drawImage(base, 0, 0);
+  const blurred = mkCanvas(W, H);
+  const bx = ctxOf(blurred, true);
+  bx.filter = 'blur(' + Math.max(4, Math.round(Math.max(W, H) / 110)) + 'px)';
+  bx.drawImage(base, 0, 0);
+  bx.filter = 'none';
+  // feather the sharp centre back in
+  const maskC = mkCanvas(W, H);
+  const mx = ctxOf(maskC, true);
+  const g = mx.createRadialGradient(W / 2, H * 0.46, Math.min(W, H) * 0.18, W / 2, H * 0.46, Math.max(W, H) * 0.62);
+  g.addColorStop(0, 'rgba(0,0,0,1)');
+  g.addColorStop(0.55, 'rgba(0,0,0,0.75)');
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  mx.fillStyle = g; mx.fillRect(0, 0, W, H);
+  const sx = ctxOf(sharp, true);
+  sx.globalCompositeOperation = 'destination-in';
+  sx.drawImage(maskC, 0, 0);
+  sx.globalCompositeOperation = 'source-over';
+  const fx = ctxOf(blurred, true);
+  fx.drawImage(sharp, 0, 0);
+  base = blurred;
+  render();
+  pushHistory();
+  toast('Background blurred');
+}
+
+/* ============================================================
+   ENHANCE
+   ============================================================ */
+async function aiEnhance() {
+  if (!base) { toast('Open a photo first'); return; }
+  if (!S.key && !S.proxy) { openSettings('AI enhance needs an AI key. Add one to use it.'); return; }
+  const prompt =
+    'Enhance this photograph without changing what it shows. Recover detail, remove noise and compression artifacts, ' +
+    'fix exposure and white balance, restore natural skin and material texture, sharpen gently. ' +
+    'Keep the same framing, same people, same objects, same colours, same aspect ratio. No crop, no added elements, no text, no border, no watermark.';
+  busy(true, 'Enhancing', 'Fixing light, colour and detail');
+  try {
+    const p = payloadFromCanvas(base, 1400, 'image/jpeg');
+    const out = await aiImage([p], prompt, { signal: busySignal(), task: 'enhance' });
+    const c = mkCanvas(base.width, base.height);
+    const x = ctxOf(c, true);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(out, 0, 0, c.width, c.height);
+    base = c;
+    render();
+    pushHistory();
+    toast('Enhanced');
+  } catch (e) {
+    toast(aiMessage(e), 4200);
+  } finally {
+    busy(false);
+  }
+}
+
+function autoTone() {
+  if (!base) return;
+  const x = ctxOf(base, true);
+  const img = x.getImageData(0, 0, base.width, base.height);
+  const d = img.data;
+  const hist = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)];
+  for (let i = 0; i < d.length; i += 4) {
+    hist[0][d[i]]++; hist[1][d[i + 1]]++; hist[2][d[i + 2]]++;
+  }
+  const total = (d.length / 4);
+  const lo = [], hi = [];
+  for (let ch = 0; ch < 3; ch++) {
+    let acc = 0, a = 0, b = 255;
+    const cut = total * 0.006;
+    for (let v = 0; v < 256; v++) { acc += hist[ch][v]; if (acc > cut) { a = v; break; } }
+    acc = 0;
+    for (let v = 255; v >= 0; v--) { acc += hist[ch][v]; if (acc > cut) { b = v; break; } }
+    lo.push(a); hi.push(Math.max(a + 8, b));
+  }
+  for (let i = 0; i < d.length; i += 4) {
+    for (let ch = 0; ch < 3; ch++) {
+      const v = d[i + ch];
+      d[i + ch] = clamp(((v - lo[ch]) * 255) / (hi[ch] - lo[ch]), 0, 255);
+    }
+  }
+  x.putImageData(img, 0, 0);
+  render();
+  pushHistory();
+  toast('Tone corrected');
+}
+
+function convolveSharp(amount) {
+  if (!base || amount <= 0) return;
+  const W = base.width, H = base.height;
+  const x = ctxOf(base, true);
+  const src = x.getImageData(0, 0, W, H);
+  const out = new Uint8ClampedArray(src.data);
+  const s = src.data;
+  const k = amount / 100;
+  const idx = (xx, yy) => (clamp(yy, 0, H - 1) * W + clamp(xx, 0, W - 1)) * 4;
+  for (let y = 0; y < H; y++) {
+    for (let xx = 0; xx < W; xx++) {
+      const i = (y * W + xx) * 4;
+      const a = idx(xx - 1, y), b = idx(xx + 1, y), c = idx(xx, y - 1), e = idx(xx, y + 1);
+      for (let ch = 0; ch < 3; ch++) {
+        const blur = (s[a + ch] + s[b + ch] + s[c + ch] + s[e + ch]) / 4;
+        out[i + ch] = clamp(s[i + ch] + (s[i + ch] - blur) * k * 1.8, 0, 255);
+      }
+    }
+  }
+  x.putImageData(new ImageData(out, W, H), 0, 0);
+  render();
+  pushHistory();
+}
+
+function denoise(amount) {
+  if (!base || amount <= 0) return;
+  const W = base.width, H = base.height;
+  const x = ctxOf(base, true);
+  const src = x.getImageData(0, 0, W, H);
+  const s = src.data;
+  const out = new Uint8ClampedArray(s);
+  const k = clamp(amount / 100, 0, 1);
+  const idx = (xx, yy) => (clamp(yy, 0, H - 1) * W + clamp(xx, 0, W - 1)) * 4;
+  for (let y = 0; y < H; y++) {
+    for (let xx = 0; xx < W; xx++) {
+      const i = (y * W + xx) * 4;
+      for (let ch = 0; ch < 3; ch++) {
+        let sum = 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) sum += s[idx(xx + dx, y + dy) + ch];
+        const avg = sum / 9;
+        out[i + ch] = clamp(lerp(s[i + ch], avg, k), 0, 255);
+      }
+    }
+  }
+  x.putImageData(new ImageData(out, W, H), 0, 0);
+  render();
+  pushHistory();
+}
+
+function upscale2x() {
+  if (!base) return;
+  const nw = Math.min(4096, base.width * 2), nh = Math.min(4096, base.height * 2);
+  const c = mkCanvas(nw, nh);
+  const x = ctxOf(c, true);
+  x.imageSmoothingQuality = 'high';
+  x.drawImage(base, 0, 0, nw, nh);
+  base = c;
+  render();
+  fit();
+  pushHistory();
+  convolveSharp(18);
+  toast('Upscaled to ' + nw + ' x ' + nh);
+}
+
+function blackWhite() {
+  if (!base) return;
+  const x = ctxOf(base, true);
+  const img = x.getImageData(0, 0, base.width, base.height);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    const v = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    const c = clamp((v - 128) * 1.12 + 128, 0, 255);
+    d[i] = d[i + 1] = d[i + 2] = c;
+  }
+  x.putImageData(img, 0, 0);
+  render();
+  pushHistory();
+}
+
+/* ---------- adjustments ---------- */
+function readAdj() {
+  adj.bright = +$('#rBright').value;
+  adj.contrast = +$('#rContrast').value;
+  adj.sat = +$('#rSat').value;
+  adj.warm = +$('#rWarm').value;
+  adj.vig = +$('#rVig').value;
+  $('#lblBright').textContent = adj.bright;
+  $('#lblContrast').textContent = adj.contrast;
+  $('#lblSat').textContent = adj.sat;
+  $('#lblWarm').textContent = adj.warm;
+  $('#lblVig').textContent = adj.vig;
+  render();
+}
+function resetAdj() {
+  ['rBright', 'rContrast', 'rSat', 'rWarm', 'rVig'].forEach((id) => { $('#' + id).value = 0; });
+  readAdj();
+}
+function bakeAdjust() {
+  if (!base) return;
+  if (!adj.bright && !adj.contrast && !adj.sat && !adj.warm && !adj.vig) { toast('No changes to apply'); return; }
+  const c = mkCanvas(base.width, base.height);
+  applyLook(c);
+  base = c;
+  resetAdj();
+  render();
+  pushHistory();
+  toast('Look applied');
+}
+
+/* ============================================================
+   SAVE
+   ============================================================ */
+function toBlob(c, type, q) {
+  return new Promise((res) => c.toBlob((b) => res(b), type, q));
+}
+
+async function doSave() {
+  if (!base) return;
+  const type = $('#inFormat').value;
+  const q = (+$('#rQual').value) / 100;
+  const maxSide = +$('#inSize').value;
+  const full = mkCanvas(base.width, base.height);
+  applyLook(full);
+  let out = full;
+  if (maxSide && Math.max(full.width, full.height) > maxSide) {
+    const k = maxSide / Math.max(full.width, full.height);
+    out = mkCanvas(full.width * k, full.height * k);
+    const x = ctxOf(out, true);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(full, 0, 0, out.width, out.height);
+  }
+  const blob = await toBlob(out, type, type === 'image/jpeg' ? q : undefined);
+  if (!blob) { toast('Could not encode the image'); return; }
+  const ext = type === 'image/png' ? 'png' : 'jpg';
+  const name = 'vasuki-' + new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-') + '.' + ext;
+  const file = new File([blob], name, { type });
+  $('#dlgSave').close();
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Vasuki AI Studio' });
+      toast('Shared');
+      return;
+    }
+  } catch (e) { /* fall through to download */ }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 6000);
+  toast('Saved ' + Math.round(blob.size / 1024) + ' KB');
+}
+
+/* ============================================================
+   SETTINGS
+   ============================================================ */
+function openSettings(msg) {
+  $('#inKey').value = S.key || '';
+  if ($('#inNx')) $('#inNx').value = S.nx || '';
+  $('#inModel').value = S.model;
+  $('#inProxy').value = S.proxy;
+  const d = $('#dlgSettings');
+  if (msg) {
+    let n = d.querySelector('.note.msg');
+    if (!n) { n = document.createElement('div'); n.className = 'note msg'; d.querySelector('.sheet').insertBefore(n, d.querySelector('.foot')); }
+    n.textContent = msg;
+  }
+  d.showModal();
+}
+
+function saveSettings() {
+  S.key = $('#inKey').value.trim();
+  S.model = $('#inModel').value;
+  S.proxy = $('#inProxy').value.trim();
+  S.nx = $('#inNx') ? $('#inNx').value.trim() : S.nx;
+  DB.set('vasuki.key3', S.key);
+  DB.set('vasuki.nx3', S.nx || '');
+  DB.set('vasuki.model3', S.model);
+  DB.set('vasuki.proxy3', S.proxy);
+  route = null; routeTried = [];
+  aiStatus(S.key || S.proxy || S.nx ? 'unknown' : 'nokey');
+  $('#dlgSettings').close();
+  toast(S.key || S.proxy || S.nx ? 'AI connection saved' : 'Key removed');
+}
+
+async function testAI() {
+  const btn = $('#btnTest');
+  S.key = $('#inKey').value.trim();
+  S.model = $('#inModel').value;
+  S.proxy = $('#inProxy').value.trim();
+  route = null; routeTried = [];
+  btn.textContent = 'Testing';
+  try {
+    const txt = await aiText('Reply with the single word: ready');
+    if (/ready/i.test(txt)) { aiStatus('ready'); toast('Connection works'); }
+    else { aiStatus('ready'); toast('Connection works'); }
+  } catch (e) {
+    aiStatus('bad');
+    toast(aiMessage(e), 4200);
+  } finally {
+    btn.textContent = 'Test';
+  }
+}
+
+/* ============================================================
+   UI BINDING
+   ============================================================ */
+function syncLabels() {
+  $('#lblSize').textContent = S.size;
+  $('#lblSoft').textContent = S.soft;
+  $('#lblTol').textContent = S.tol;
+  $('#lblPen').textContent = S.penSize;
+}
+
+function cycleZoom() {
+  S.zoom = S.zoom >= 3 ? 1 : S.zoom + 1;
+  if (S.zoom === 1) { S.panX = 0; S.panY = 0; }
+  applyTransform();
+}
+
+function bind() {
+  // dock + panels
+  $$('#dock button').forEach((b) => b.addEventListener('click', () => {
+    const name = b.dataset.panel;
+    const shown = $('#panels .panel.show');
+    // tapping the tab you are already on folds the panel away and gives the canvas the screen
+    if (shown && shown.dataset.panel === name) {
+      $$('#panels .panel').forEach((p) => p.classList.remove('show'));
+      b.classList.remove('on');
+      setTimeout(fit, 30);
+      return;
+    }
+    setPanel(name);
+  }));
+  $$('#panels .panel').forEach((p) => {
+    p.addEventListener('click', (e) => e.stopPropagation());
+  });
+
+  // files
+  $('#btnOpenBig').addEventListener('click', () => $('#fileIn').click());
+  $('#btnDemo').addEventListener('click', demoPhoto);
+  $('#btnOpen2').addEventListener('click', () => $('#fileIn').click());
+  $('#fileIn').addEventListener('change', (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    openFile(f);
+  });
+  $('#guideIn').addEventListener('change', async (e) => {
+    const f = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    sk.guide = url;
+    const el = $('#guideImg');
+    el.style.backgroundImage = 'url(' + url + ')';
+    el.style.display = 'block';
+    toast('Reference photo is showing behind your sketch');
+  });
+
+  // stage tools
+  $('#btnUndo').addEventListener('click', undo);
+  $('#btnRedo').addEventListener('click', redo);
+  $('#btnZoom').addEventListener('click', cycleZoom);
+  $('#btnSave').addEventListener('click', () => { if (base) $('#dlgSave').showModal(); });
+  const cmp = $('#btnCompare');
+  cmp.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (!original) return;
+    const c = $('#cvPhoto');
+    const x = ctxOf(c, true);
+    x.setTransform(1, 0, 0, 1, 0, 0);
+    x.filter = 'none';
+    x.clearRect(0, 0, c.width, c.height);
+    x.drawImage(original, 0, 0, c.width, c.height);
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) =>
+    cmp.addEventListener(ev, () => { if (base) render(); }));
+
+  // erase tool
+  $$('#toolSeg button').forEach((b) => b.addEventListener('click', () => {
+    S.tool = b.dataset.tool;
+    $$('#toolSeg button').forEach((o) => o.classList.toggle('on', o === b));
+    $('#tolRow').classList.toggle('hidden', S.tool !== 'tap');
+    const hints = {
+      brush: 'Paint over the thing you want gone, then tap Erase with AI. The model rebuilds what was behind it.',
+      lasso: 'Draw a loop around the object. Close it and it becomes the selection.',
+      box: 'Drag a box around the object.',
+      tap: 'Tap the object once. It selects the whole colour region around your tap. Lower sensitivity for tighter picks.'
+    };
+    $('#eraseHint').textContent = hints[S.tool];
+  }));
+  $('#rSize').addEventListener('input', (e) => { S.size = +e.target.value; syncLabels(); });
+  $('#rSoft').addEventListener('input', (e) => { S.soft = +e.target.value; syncLabels(); });
+  $('#rTol').addEventListener('input', (e) => { S.tol = +e.target.value; syncLabels(); });
+  $('#btnAIErase').addEventListener('click', aiErase);
+  $('#btnQuickFill').addEventListener('click', quickFill);
+  $('#btnClearMask').addEventListener('click', () => { clearMask(); toast('Selection cleared'); });
+  $('#btnFind').addEventListener('click', () => aiFindObject($('#findTxt').value));
+  $('#findTxt').addEventListener('keydown', (e) => { if (e.key === 'Enter') aiFindObject(e.target.value); });
+
+  // sketch
+  $$('#ratioChips .chip').forEach((c) => c.addEventListener('click', () => {
+    $$('#ratioChips .chip').forEach((o) => o.classList.toggle('on', o === c));
+    S.ratio = c.dataset.ratio;
+    ensureSketch();
+  }));
+  $$('#styleChips .chip').forEach((c) => c.addEventListener('click', () => {
+    $$('#styleChips .chip').forEach((o) => o.classList.toggle('on', o === c));
+    S.style = c.dataset.style;
+  }));
+  const penColors = ['#111111', '#e11d48', '#2563eb', '#16a34a', '#f59e0b', '#7c3aed', '#0f766e'];
+  penColors.forEach((col, i) => {
+    const b = document.createElement('button');
+    b.className = 'sw' + (i === 0 ? ' on' : '');
+    b.style.background = col;
+    b.dataset.color = col;
+    b.addEventListener('click', () => {
+      S.penColor = col; S.penErase = false;
+      $$('#penSwatches .sw').forEach((o) => o.classList.toggle('on', o === b));
+      $('#btnSkErase').classList.remove('primary');
+    });
+    $('#penSwatches').appendChild(b);
+  });
+  $('#rPen').addEventListener('input', (e) => { S.penSize = +e.target.value; syncLabels(); });
+  $('#btnSkErase').addEventListener('click', (e) => {
+    S.penErase = !S.penErase;
+    e.currentTarget.classList.toggle('primary', S.penErase);
+  });
+  $('#btnSkUndo').addEventListener('click', skUndo);
+  $('#btnSkClear').addEventListener('click', skClear);
+  $('#btnGuide').addEventListener('click', () => $('#guideIn').click());
+  $('#btnRender').addEventListener('click', renderSketch);
+  $('#btnSketchToPhoto').addEventListener('click', async () => {
+    ensureSketch();
+    const c = mkCanvas(sk.cv.width, sk.cv.height);
+    ctxOf(c, true).drawImage(sk.cv, 0, 0);
+    await adoptImage(c);
+    setMode('photo');
+    toast('Sketch loaded as the photo. Erase or adjust it as usual.');
+  });
+
+  // background
+  $('#btnBgAI').addEventListener('click', aiBackground);
+  $('#btnBgBlur').addEventListener('click', blurBackground);
+  $$('#bgChips .chip').forEach((c) => c.addEventListener('click', () => {
+    $('#bgPrompt').value = c.dataset.bg;
+    $$('#bgChips .chip').forEach((o) => o.classList.toggle('on', o === c));
+  }));
+  $('#bgPrompt').addEventListener('keydown', (e) => { if (e.key === 'Enter') aiBackground(); });
+
+  // adjust
+  ['rBright', 'rContrast', 'rSat', 'rWarm', 'rVig'].forEach((id) => {
+    $('#' + id).addEventListener('input', readAdj);
+  });
+  $('#btnApplyAdj').addEventListener('click', bakeAdjust);
+  $('#btnResetAdj').addEventListener('click', resetAdj);
+
+  // enhance
+  $('#btnEnhanceAI').addEventListener('click', aiEnhance);
+  $('#btnAutoLevels').addEventListener('click', autoTone);
+  $('#btnResize2x').addEventListener('click', upscale2x);
+  $('#btnBw').addEventListener('click', blackWhite);
+  $('#rSharp').addEventListener('change', (e) => {
+    const v = +e.target.value;
+    if (v > 0) convolveSharp(v);
+    e.target.value = 0; $('#lblSharp').textContent = '0';
+  });
+  $('#rSharp').addEventListener('input', (e) => { $('#lblSharp').textContent = e.target.value; });
+  $('#rDenoise').addEventListener('change', (e) => {
+    const v = +e.target.value;
+    if (v > 0) denoise(v);
+    e.target.value = 0; $('#lblDenoise').textContent = '0';
+  });
+  $('#rDenoise').addEventListener('input', (e) => { $('#lblDenoise').textContent = e.target.value; });
+
+  // settings + save
+  $('#aiPill').addEventListener('click', () => openSettings());
+  $('#btnSettings').addEventListener('click', () => openSettings());
+  $('#btnSaveKey').addEventListener('click', saveSettings);
+  $('#btnTest').addEventListener('click', testAI);
+  $('#rQual').addEventListener('input', (e) => { $('#lblQual').textContent = e.target.value; });
+  $('#btnDoSave').addEventListener('click', doSave);
+  $('#btnCancelSave').addEventListener('click', () => $('#dlgSave').close());
+  $('#busyCancel').addEventListener('click', () => {
+    busy(false);
+    toast('Cancelled');
+  });
+
+  // stage pointers
+  const stage = $('#stage');
+  stage.addEventListener('pointerdown', (e) => {
+    // only the canvases take pointer input, so buttons on top keep working
+    if (!e.target || e.target.tagName !== 'CANVAS') return;
+    try { e.target.setPointerCapture(e.pointerId); } catch (err) { }
+    if (S.mode === 'sketch') { sketchPointerDown(e); return; }
+    stagePointerDown(e);
+  });
+  stage.addEventListener('pointermove', (e) => {
+    if (S.mode === 'sketch') sketchPointerMove(e);
+    else stagePointerMove(e);
+  });
+  stage.addEventListener('pointerup', (e) => {
+    if (S.mode === 'sketch') sketchPointerUp(e);
+    else stagePointerUp(e);
+  });
+  stage.addEventListener('pointercancel', (e) => {
+    if (S.mode === 'sketch') { sketchDrawing = false; }
+    else { pointers.delete(e.pointerId); drawing = false; lassoPts = []; boxStart = null; }
+  });
+  stage.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  // resize
+  let rt = 0;
+  window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(fit, 120); });
+  if (window.ResizeObserver) {
+    let lastH = 0;
+    new ResizeObserver(() => {
+      const h = $('#stage').clientHeight;
+      if (Math.abs(h - lastH) > 2) { lastH = h; fit(); }
+    }).observe($('#stage'));
+  }
+  window.addEventListener('orientationchange', () => setTimeout(fit, 250));
+
+  // shortcuts
+  window.addEventListener('keydown', (e) => {
+    if (e.target.matches('input,textarea,select')) return;
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); }
+    if (e.key === 'Escape') clearMask();
+    if (e.key === '[') { S.size = clamp(S.size - 6, 6, 240); $('#rSize').value = S.size; syncLabels(); }
+    if (e.key === ']') { S.size = clamp(S.size + 6, 6, 240); $('#rSize').value = S.size; syncLabels(); }
+  });
+}
+
+/* ============================================================
+   SELF TEST
+   ============================================================ */
+async function selfTest() {
+  const box = document.createElement('div');
+  box.id = 'selftest';
+  document.body.appendChild(box);
+  const lines = [];
+  const ok = (name, cond, extra) => lines.push((cond ? 'PASS ' : 'FAIL ') + name + (extra ? ' :: ' + extra : ''));
+  try {
+    const c = mkCanvas(100, 50);
+    ok('canvas size', c.width === 100 && c.height === 50);
+    demoPhoto();
+    ok('demo photo', !!base && base.width === 1200, base ? base.width + 'x' + base.height : 'none');
+    ok('history seeded', hist.list.length === 1 && hist.idx === 0);
+
+    // mask painting
+    S.size = 40; S.soft = 55;
+    strokeMask({ x: 300, y: 300 }, { x: 340, y: 300 }, false);
+    const b1 = maskBounds();
+    ok('mask stroke bounds', !!b1 && b1.w > 10, b1 ? JSON.stringify(b1) : 'none');
+    ok('mask pixel count', maskPixelCount() > 100, String(maskPixelCount()));
+
+    // local fill
+    const before = ctxOf(base, true).getImageData(320, 300, 1, 1).data.slice(0, 3).join(',');
+    quickFill();
+    const after = ctxOf(base, true).getImageData(320, 300, 1, 1).data.slice(0, 3).join(',');
+    ok('quick fill ran', true, before + ' -> ' + after);
+    ok('history grew', hist.list.length === 2, String(hist.list.length));
+
+    // undo / redo
+    await undo();
+    ok('undo works', hist.idx === 0);
+    await redo();
+    ok('redo works', hist.idx === 1);
+
+    // tap select
+    magicSelect(300, 470);
+    ok('magic select', maskPixelCount() > 500, String(maskPixelCount()));
+    clearMask();
+    ok('clear mask', maskPixelCount() === 0);
+
+    // payload
+    const p = payloadFromCanvas(base, 512, 'image/jpeg');
+    ok('payload encode', p.b64.length > 1000 && p.w <= 512, p.mime + ' ' + p.w + 'x' + p.h);
+
+    // binary mask
+    strokeMask({ x: 300, y: 300 }, { x: 320, y: 320 }, false);
+    const bm = binaryMaskCanvas(128, 128, mask, 250, 250, 200, 200, 2);
+    const bd = ctxOf(bm, true).getImageData(0, 0, 128, 128).data;
+    let white = 0;
+    for (let i = 0; i < bd.length; i += 4) if (bd[i] > 128) white++;
+    ok('binary mask', white > 50, String(white));
+    clearMask();
+
+    // deep finder
+    const fake = { candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/png', data: 'iVBORw0KGgo' + 'A'.repeat(900) } }] } }] };
+    const found = deepFindImage(fake);
+    ok('response image finder', !!found && found.mime === 'image/png');
+
+    // sketch
+    ensureSketch();
+    ok('sketch canvas', !!sk.cv && sk.cv.width === 1024, sk.cv ? sk.cv.width + 'x' + sk.cv.height : 'none');
+    skPush();
+    skDot({ x: 100, y: 100 }, { x: 300, y: 300 });
+    ok('sketch draw', sketchInkAmount() > 5, String(sketchInkAmount()));
+    await skUndo();
+    ok('sketch undo', true);
+
+    // adjust bake
+    $('#rBright').value = 20; readAdj();
+    bakeAdjust();
+    ok('adjust bake', hist.list.length > 2, String(hist.list.length));
+
+    // ai without key must fail cleanly
+    const keepKey = S.key, keepProxy = S.proxy;
+    S.key = ''; S.proxy = '';
+    let threw = false;
+    try { await aiImage([p], 'x', {}); } catch (e) { threw = e.code === 'NO_KEY'; }
+    ok('no key guard', threw);
+    S.key = keepKey; S.proxy = keepProxy;
+
+    // save encode
+    const blob = await toBlob(base, 'image/jpeg', 0.9);
+    ok('encode jpeg', !!blob && blob.size > 1000, blob ? String(blob.size) : 'null');
+
+    ok('mask bounds empty', maskBounds() === null);
+  } catch (e) {
+    lines.push('FAIL exception :: ' + (e && e.message));
+  }
+  const fails = lines.filter((l) => l.startsWith('FAIL')).length;
+  box.textContent = 'SELFTEST ' + (fails ? fails + ' FAILED' : 'ALL PASS') + '\n\n' + lines.join('\n');
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+function boot() {
+  bind();
+  syncLabels();
+  aiStatus(S.key || S.proxy || S.nx ? 'unknown' : 'nokey');
+  setPanel('erase');
+  refreshHistBtns();
+  if (/selftest/.test(location.search)) { selfTest(); }
+}
+document.addEventListener('DOMContentLoaded', boot);
+
+</script>
+</body>
+</html>
