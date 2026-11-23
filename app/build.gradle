@@ -1,12 +1,20 @@
 plugins { id 'com.android.application' }
 android {
-  namespace 'com.vasuki.myapp'
+  namespace 'com.vasuki.vasukiapkconverter'
   compileSdk 34
+  signingConfigs {
+    debug {
+      storeFile file('vasuki.keystore')
+      storePassword 'vasuki123'
+      keyAlias 'vasuki'
+      keyPassword 'vasuki123'
+    }
+  }
   defaultConfig {
-    applicationId 'com.vasuki.myapp'
+    applicationId 'com.vasuki.vasukiapkconverter'
     minSdk 24
     targetSdk 34
-    versionCode 1
+    versionCode 1795449627
     versionName '1.0'
   }
 }

@@ -1,4 +1,4 @@
-package com.vasuki.myapp;
+package com.vasuki.vasukiapkconverter;
 
 import android.app.Activity;
 import android.app.DownloadManager;
@@ -131,7 +131,7 @@ public class MainActivity extends Activity {
         Intent get = new Intent(Intent.ACTION_GET_CONTENT);
         get.addCategory(Intent.CATEGORY_OPENABLE);
         get.setType("*/*");
-        if (p != null && p.getAcceptTypes() != null && p.getAcceptTypes().length > 0 && !java.util.Arrays.toString(p.getAcceptTypes()).contains("[.") && !java.util.Arrays.toString(p.getAcceptTypes()).contains(", .")) {
+        if (p != null && p.getAcceptTypes() != null && p.getAcceptTypes().length > 0) {
           String[] acc = p.getAcceptTypes();
           if (acc.length == 1) {
             String a = acc[0];
