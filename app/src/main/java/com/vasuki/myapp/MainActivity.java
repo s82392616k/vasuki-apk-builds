@@ -1,4 +1,4 @@
-package com.vasuki.vasukiapkconverter;
+package com.vasuki.myapp;
 
 import android.app.Activity;
 import android.app.DownloadManager;
