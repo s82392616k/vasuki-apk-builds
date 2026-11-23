@@ -33,10 +33,10 @@ public class MainActivity extends Activity {
   private static final int REQ_CAM = 1002;
   private static final int REQ_PERM = 1003;
   private static final boolean CAM = true;
-  private static final boolean MIC = false;
+  private static final boolean MIC = true;
   private static final boolean FILES = true;
-  private static final boolean LOC = false;
-  private static final boolean NOTIF = false;
+  private static final boolean LOC = true;
+  private static final boolean NOTIF = true;
 
   private WebView web;
   private ValueCallback<Uri[]> fileCb;
@@ -106,7 +106,7 @@ public class MainActivity extends Activity {
     s.setAllowFileAccess(true);
     s.setAllowContentAccess(true);
     s.setMediaPlaybackRequiresUserGesture(false);
-    s.setGeolocationEnabled(false);
+    s.setGeolocationEnabled(true);
     s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
     web.setWebViewClient(new WebViewClient());
     web.setWebChromeClient(new WebChromeClient() {
