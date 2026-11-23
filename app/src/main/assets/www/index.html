@@ -151,15 +151,24 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 </div>
 </section>
 
-<section class="hide">
+<section style="display:none" aria-hidden="true">
 <h2>7. Build account</h2>
-<p class="note">Python in this page packs your app, then a free GitHub account compiles the real APK. Use a repository used only for this tool, because its files are replaced on every build.</p>
+<p class="note">Your app is packed in this page, then your own free GitHub account compiles the real APK. Use a repository only for this tool, because its files are replaced on every build.</p>
+<label for="ghTok">GitHub token</label>
+<input type="password" id="ghTok" placeholder="Leave empty to use the built-in token" autocomplete="off" spellcheck="false" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:15px system-ui,sans-serif">
+<label style="display:flex;gap:8px;align-items:center;margin-top:8px"><input type="checkbox" id="ghRem" checked> Remember on this device only</label>
+<button type="button" id="ghClr" style="margin-top:8px;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:14px system-ui,sans-serif">Clear saved token</button>
+<ol>
+<li>Open github.com, then Settings, Developer settings, Personal access tokens, Tokens (classic).</li>
+<li>Generate new token and tick <b>repo</b> and <b>workflow</b>.</li>
+<li>Copy it and paste it above.</li>
+</ol>
 <label for="repo">Repository name</label>
 <input type="text" id="repo" value="vasuki-apk-builds">
 </section>
 <button class="btn main" id="go">Convert to APK</button>
 <pre id="log"></pre>
-<div id="res" class="hide"><a id="dl" class="btn main" style="display:block;text-align:center;text-decoration:none" href="#">Download APK</a></div>
+<div id="res" class="hide"><a id="dl" class="btn main" style="display:block;text-align:center;text-decoration:none" href="#" target="_self" download="app.apk" rel="noopener">Download APK</a></div>
 
 <section style="margin-top:14px">
 <h2>Codex</h2>
@@ -246,7 +255,7 @@ ol{font:14px/1.6 system-ui,sans-serif;padding-left:20px;margin:6px 0 0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 /* Build engine (plain JavaScript, replaces the old Pyodide/Python packer) */
-const TPL={"JAVA": "package __PKG__;\n\nimport android.app.Activity;\nimport android.app.DownloadManager;\nimport android.content.ContentValues;\nimport android.content.Intent;\nimport android.content.pm.PackageManager;\nimport android.graphics.Color;\nimport android.net.Uri;\nimport android.os.Build;\nimport android.os.Bundle;\nimport android.os.Environment;\nimport android.os.Handler;\nimport android.provider.MediaStore;\nimport android.view.View;\nimport android.webkit.DownloadListener;\nimport android.webkit.GeolocationPermissions;\nimport android.webkit.PermissionRequest;\nimport android.webkit.URLUtil;\nimport android.webkit.ValueCallback;\nimport android.webkit.WebChromeClient;\nimport android.webkit.WebSettings;\nimport android.webkit.WebView;\nimport android.webkit.WebViewClient;\nimport android.widget.FrameLayout;\nimport android.widget.ImageView;\nimport android.widget.Toast;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class MainActivity extends Activity {\n  private static final int REQ_FILE = 1001;\n  private static final int REQ_CAM = 1002;\n  private static final int REQ_PERM = 1003;\n  private static final boolean CAM = __WANT_CAM__;\n  private static final boolean MIC = __WANT_MIC__;\n  private static final boolean FILES = __WANT_FILES__;\n  private static final boolean LOC = __WANT_LOC__;\n  private static final boolean NOTIF = __WANT_NOTIF__;\n\n  private WebView web;\n  private ValueCallback<Uri[]> fileCb;\n  private Uri camUri;\n\n  private List<String> needed() {\n    List<String> l = new ArrayList<String>();\n    if (CAM) {\n      l.add(android.Manifest.permission.CAMERA);\n      if (Build.VERSION.SDK_INT <= 28) l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);\n    }\n    if (MIC) l.add(android.Manifest.permission.RECORD_AUDIO);\n    if (LOC) {\n      l.add(android.Manifest.permission.ACCESS_FINE_LOCATION);\n      l.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);\n    }\n    if (NOTIF && Build.VERSION.SDK_INT >= 33) l.add(\"android.permission.POST_NOTIFICATIONS\");\n    if (FILES) {\n      if (Build.VERSION.SDK_INT >= 33) {\n        l.add(\"android.permission.READ_MEDIA_IMAGES\");\n        l.add(\"android.permission.READ_MEDIA_VIDEO\");\n      } else if (Build.VERSION.SDK_INT <= 28) {\n        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);\n        l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);\n      } else {\n        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);\n      }\n    }\n    return l;\n  }\n\n  private void askPerms() {\n    List<String> need = new ArrayList<String>();\n    for (String p : needed()) {\n      if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) need.add(p);\n    }\n    if (!need.isEmpty()) requestPermissions(need.toArray(new String[0]), REQ_PERM);\n  }\n\n  private void saveDownload(String url, String cd, String mime) {\n    try {\n      if (url == null || url.startsWith(\"blob:\") || url.startsWith(\"data:\")) {\n        Toast.makeText(this, \"This file is made inside the page and cannot be saved by the app. Use a web link instead.\", Toast.LENGTH_LONG).show();\n        return;\n      }\n      String name = URLUtil.guessFileName(url, cd, mime);\n      DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);\n      DownloadManager.Request rq = new DownloadManager.Request(Uri.parse(url));\n      rq.setTitle(name);\n      rq.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);\n      rq.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);\n      dm.enqueue(rq);\n      Toast.makeText(this, \"Downloading \" + name, Toast.LENGTH_SHORT).show();\n    } catch (Exception e) {\n      Toast.makeText(this, \"Could not start the download.\", Toast.LENGTH_SHORT).show();\n    }\n  }\n\n  @Override protected void onCreate(Bundle b) {\n    super.onCreate(b);\n    getWindow().setStatusBarColor(Color.parseColor(\"__BAR__\"));\n    FrameLayout root = new FrameLayout(this);\n    web = new WebView(this);\n    WebSettings s = web.getSettings();\n    s.setJavaScriptEnabled(true);\n    s.setDomStorageEnabled(true);\n    s.setAllowFileAccess(true);\n    s.setAllowContentAccess(true);\n    s.setMediaPlaybackRequiresUserGesture(false);\n    s.setGeolocationEnabled(__WANT_GEO__);\n    s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);\n    web.setWebViewClient(new WebViewClient());\n    web.setWebChromeClient(new WebChromeClient() {\n      @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {\n        if (fileCb != null) fileCb.onReceiveValue(null);\n        fileCb = cb;\n        boolean snap = CAM && p != null && p.isCaptureEnabled();\n        if (snap) {\n          try {\n            ContentValues cv = new ContentValues();\n            cv.put(MediaStore.Images.Media.DISPLAY_NAME, \"vasuki_\" + System.currentTimeMillis() + \".jpg\");\n            cv.put(MediaStore.Images.Media.MIME_TYPE, \"image/jpeg\");\n            camUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);\n            Intent ci = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);\n            ci.putExtra(MediaStore.EXTRA_OUTPUT, camUri);\n            startActivityForResult(ci, REQ_CAM);\n            return true;\n          } catch (Exception e) {\n            camUri = null;\n          }\n        }\n        Intent get = new Intent(Intent.ACTION_GET_CONTENT);\n        get.addCategory(Intent.CATEGORY_OPENABLE);\n        get.setType(\"*/*\");\n        if (p != null && p.getAcceptTypes() != null && p.getAcceptTypes().length > 0) {\n          String[] acc = p.getAcceptTypes();\n          if (acc.length == 1) {\n            String a = acc[0];\n            if (a.startsWith(\".\")) get.setType(\"*/*\"); else get.setType(a);\n          } else {\n            get.putExtra(Intent.EXTRA_MIME_TYPES, acc);\n          }\n        }\n        if (p != null && p.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) get.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);\n        try {\n          startActivityForResult(Intent.createChooser(get, \"Select file\"), REQ_FILE);\n        } catch (Exception e) {\n          if (fileCb != null) fileCb.onReceiveValue(null);\n          fileCb = null;\n          Toast.makeText(MainActivity.this, \"No file picker found on this phone.\", Toast.LENGTH_SHORT).show();\n        }\n        return true;\n      }\n      @Override public void onPermissionRequest(final PermissionRequest r) {\n        runOnUiThread(new Runnable() { public void run() {\n          List<String> ok = new ArrayList<String>();\n          for (String res : r.getResources()) {\n            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res) && CAM) ok.add(res);\n            else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && MIC) ok.add(res);\n          }\n          if (ok.isEmpty()) r.deny(); else r.grant(ok.toArray(new String[0]));\n        }});\n      }\n      @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback cb) {\n        cb.invoke(origin, LOC, false);\n      }\n    });\n    web.setDownloadListener(new DownloadListener() {\n      public void onDownloadStart(String url, String ua, String cd, String mime, long len) {\n        saveDownload(url, cd, mime);\n      }\n    });\n    root.addView(web);\n    final ImageView splash = new ImageView(this);\n    splash.setBackgroundColor(Color.parseColor(\"__SPLASHBG__\"));\n    splash.setImageResource(R.drawable.splash);\n    splash.setScaleType(ImageView.ScaleType.CENTER_INSIDE);\n    root.addView(splash, new FrameLayout.LayoutParams(-1, -1));\n    setContentView(root);\n    web.loadUrl(__URL__);\n    askPerms();\n    new Handler().postDelayed(new Runnable() { public void run() { splash.setVisibility(View.GONE); } }, 2000);\n  }\n\n  @Override protected void onActivityResult(int req, int res, Intent data) {\n    if (req == REQ_FILE || req == REQ_CAM) {\n      Uri[] out = null;\n      if (res == RESULT_OK) {\n        if (req == REQ_CAM) {\n          if (camUri != null) out = new Uri[]{camUri};\n        } else if (data != null) {\n          if (data.getClipData() != null) {\n            int n = data.getClipData().getItemCount();\n            out = new Uri[n];\n            for (int i = 0; i < n; i++) out[i] = data.getClipData().getItemAt(i).getUri();\n          } else if (data.getData() != null) {\n            out = new Uri[]{data.getData()};\n          }\n        }\n      }\n      if (fileCb != null) { fileCb.onReceiveValue(out); fileCb = null; }\n      camUri = null;\n      return;\n    }\n    super.onActivityResult(req, res, data);\n  }\n\n  @Override public void onBackPressed() {\n    if (web.canGoBack()) web.goBack(); else super.onBackPressed();\n  }\n}\n", "MANIFEST": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n__PERMS__\n  <queries>\n    <intent><action android:name=\"android.media.action.IMAGE_CAPTURE\"/><\/intent>\n    <intent><action android:name=\"android.intent.action.GET_CONTENT\"/><\/intent>\n  <\/queries>\n  <application android:label=__LABEL__ android:icon=\"@mipmap/ic_launcher\" android:usesCleartextTraffic=\"true\" android:theme=\"@android:style/Theme.Material.Light.NoActionBar\">\n    <activity android:name=\".MainActivity\" android:exported=\"true\" android:configChanges=\"orientation|screenSize|keyboardHidden\">\n      <intent-filter>\n        <action android:name=\"android.intent.action.MAIN\"/>\n        <category android:name=\"android.intent.category.LAUNCHER\"/>\n      <\/intent-filter>\n    <\/activity>\n  <\/application>\n<\/manifest>\n", "APP_GRADLE": "plugins { id 'com.android.application' }\nandroid {\n  namespace '__PKG__'\n  compileSdk 34\n  defaultConfig {\n    applicationId '__PKG__'\n    minSdk 24\n    targetSdk 34\n    versionCode 1\n    versionName '1.0'\n  }\n}\n", "SETTINGS": "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositories { google(); mavenCentral() } }\nrootProject.name = 'VasukiApp'\ninclude ':app'\n", "WORKFLOW": "name: Build APK\non:\n  push:\n  workflow_dispatch:\npermissions:\n  contents: write\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: 17\n      - run: |\n          yes | \"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager\" --licenses || true\n      - uses: gradle/actions/setup-gradle@v4\n        with:\n          gradle-version: 8.7\n      - run: gradle assembleDebug\n      - run: |\n          cp app/build/outputs/apk/debug/app-debug.apk app.apk\n          gh release create \"build-${GITHUB_SHA::7}\" app.apk --target \"$GITHUB_SHA\" --title \"APK ${GITHUB_SHA::7}\" --notes \"Built by Vasuki APK Converter\"\n        env:\n          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"};
+const TPL={"JAVA": "package __PKG__;\n\nimport android.app.Activity;\nimport android.app.DownloadManager;\nimport android.content.ContentValues;\nimport android.content.Intent;\nimport android.content.pm.PackageManager;\nimport android.graphics.Color;\nimport android.net.Uri;\nimport android.os.Build;\nimport android.os.Bundle;\nimport android.os.Environment;\nimport android.os.Handler;\nimport android.provider.MediaStore;\nimport android.view.View;\nimport android.webkit.DownloadListener;\nimport android.webkit.GeolocationPermissions;\nimport android.webkit.PermissionRequest;\nimport android.webkit.URLUtil;\nimport android.webkit.ValueCallback;\nimport android.webkit.WebChromeClient;\nimport android.webkit.WebSettings;\nimport android.webkit.WebView;\nimport android.webkit.WebViewClient;\nimport android.widget.FrameLayout;\nimport android.widget.ImageView;\nimport android.widget.Toast;\nimport java.util.ArrayList;\nimport java.util.List;\n\npublic class MainActivity extends Activity {\n  private static final int REQ_FILE = 1001;\n  private static final int REQ_CAM = 1002;\n  private static final int REQ_PERM = 1003;\n  private static final boolean CAM = __WANT_CAM__;\n  private static final boolean MIC = __WANT_MIC__;\n  private static final boolean FILES = __WANT_FILES__;\n  private static final boolean LOC = __WANT_LOC__;\n  private static final boolean NOTIF = __WANT_NOTIF__;\n\n  private WebView web;\n  private ValueCallback<Uri[]> fileCb;\n  private Uri camUri;\n\n  private List<String> needed() {\n    List<String> l = new ArrayList<String>();\n    if (CAM) {\n      l.add(android.Manifest.permission.CAMERA);\n      if (Build.VERSION.SDK_INT <= 28) l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);\n    }\n    if (MIC) l.add(android.Manifest.permission.RECORD_AUDIO);\n    if (LOC) {\n      l.add(android.Manifest.permission.ACCESS_FINE_LOCATION);\n      l.add(android.Manifest.permission.ACCESS_COARSE_LOCATION);\n    }\n    if (NOTIF && Build.VERSION.SDK_INT >= 33) l.add(\"android.permission.POST_NOTIFICATIONS\");\n    if (FILES) {\n      if (Build.VERSION.SDK_INT >= 33) {\n        l.add(\"android.permission.READ_MEDIA_IMAGES\");\n        l.add(\"android.permission.READ_MEDIA_VIDEO\");\n      } else if (Build.VERSION.SDK_INT <= 28) {\n        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);\n        l.add(android.Manifest.permission.WRITE_EXTERNAL_STORAGE);\n      } else {\n        l.add(android.Manifest.permission.READ_EXTERNAL_STORAGE);\n      }\n    }\n    return l;\n  }\n\n  private void askPerms() {\n    List<String> need = new ArrayList<String>();\n    for (String p : needed()) {\n      if (checkSelfPermission(p) != PackageManager.PERMISSION_GRANTED) need.add(p);\n    }\n    if (!need.isEmpty()) requestPermissions(need.toArray(new String[0]), REQ_PERM);\n  }\n\n  private void saveDownload(String url, String cd, String mime) {\n    try {\n      if (url == null || url.startsWith(\"blob:\") || url.startsWith(\"data:\")) {\n        Toast.makeText(this, \"This file is made inside the page and cannot be saved by the app. Use a web link instead.\", Toast.LENGTH_LONG).show();\n        return;\n      }\n      String name = URLUtil.guessFileName(url, cd, mime);\n      DownloadManager dm = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);\n      DownloadManager.Request rq = new DownloadManager.Request(Uri.parse(url));\n      rq.setTitle(name);\n      rq.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);\n      rq.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, name);\n      dm.enqueue(rq);\n      Toast.makeText(this, \"Downloading \" + name, Toast.LENGTH_SHORT).show();\n    } catch (Exception e) {\n      Toast.makeText(this, \"Could not start the download.\", Toast.LENGTH_SHORT).show();\n    }\n  }\n\n  @Override protected void onCreate(Bundle b) {\n    super.onCreate(b);\n    getWindow().setStatusBarColor(Color.parseColor(\"__BAR__\"));\n    FrameLayout root = new FrameLayout(this);\n    web = new WebView(this);\n    WebSettings s = web.getSettings();\n    s.setJavaScriptEnabled(true);\n    s.setDomStorageEnabled(true);\n    s.setAllowFileAccess(true);\n    s.setAllowContentAccess(true);\n    s.setMediaPlaybackRequiresUserGesture(false);\n    s.setGeolocationEnabled(__WANT_GEO__);\n    s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);\n    web.setWebViewClient(new WebViewClient());\n    web.setWebChromeClient(new WebChromeClient() {\n      @Override public boolean onShowFileChooser(WebView v, ValueCallback<Uri[]> cb, FileChooserParams p) {\n        if (fileCb != null) fileCb.onReceiveValue(null);\n        fileCb = cb;\n        boolean snap = CAM && p != null && p.isCaptureEnabled();\n        if (snap) {\n          try {\n            ContentValues cv = new ContentValues();\n            cv.put(MediaStore.Images.Media.DISPLAY_NAME, \"vasuki_\" + System.currentTimeMillis() + \".jpg\");\n            cv.put(MediaStore.Images.Media.MIME_TYPE, \"image/jpeg\");\n            camUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);\n            Intent ci = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);\n            ci.putExtra(MediaStore.EXTRA_OUTPUT, camUri);\n            startActivityForResult(ci, REQ_CAM);\n            return true;\n          } catch (Exception e) {\n            camUri = null;\n          }\n        }\n        Intent get = new Intent(Intent.ACTION_GET_CONTENT);\n        get.addCategory(Intent.CATEGORY_OPENABLE);\n        get.setType(\"*/*\");\n        if (p != null && p.getAcceptTypes() != null && p.getAcceptTypes().length > 0 && !java.util.Arrays.toString(p.getAcceptTypes()).contains(\"[.\") && !java.util.Arrays.toString(p.getAcceptTypes()).contains(\", .\")) {\n          String[] acc = p.getAcceptTypes();\n          if (acc.length == 1) {\n            String a = acc[0];\n            if (a.startsWith(\".\")) get.setType(\"*/*\"); else get.setType(a);\n          } else {\n            get.putExtra(Intent.EXTRA_MIME_TYPES, acc);\n          }\n        }\n        if (p != null && p.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE) get.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);\n        try {\n          startActivityForResult(Intent.createChooser(get, \"Select file\"), REQ_FILE);\n        } catch (Exception e) {\n          if (fileCb != null) fileCb.onReceiveValue(null);\n          fileCb = null;\n          Toast.makeText(MainActivity.this, \"No file picker found on this phone.\", Toast.LENGTH_SHORT).show();\n        }\n        return true;\n      }\n      @Override public void onPermissionRequest(final PermissionRequest r) {\n        runOnUiThread(new Runnable() { public void run() {\n          List<String> ok = new ArrayList<String>();\n          for (String res : r.getResources()) {\n            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(res) && CAM) ok.add(res);\n            else if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(res) && MIC) ok.add(res);\n          }\n          if (ok.isEmpty()) r.deny(); else r.grant(ok.toArray(new String[0]));\n        }});\n      }\n      @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback cb) {\n        cb.invoke(origin, LOC, false);\n      }\n    });\n    web.setDownloadListener(new DownloadListener() {\n      public void onDownloadStart(String url, String ua, String cd, String mime, long len) {\n        saveDownload(url, cd, mime);\n      }\n    });\n    root.addView(web);\n    final ImageView splash = new ImageView(this);\n    splash.setBackgroundColor(Color.parseColor(\"__SPLASHBG__\"));\n    splash.setImageResource(R.drawable.splash);\n    splash.setScaleType(ImageView.ScaleType.CENTER_INSIDE);\n    root.addView(splash, new FrameLayout.LayoutParams(-1, -1));\n    setContentView(root);\n    web.loadUrl(__URL__);\n    askPerms();\n    new Handler().postDelayed(new Runnable() { public void run() { splash.setVisibility(View.GONE); } }, 2000);\n  }\n\n  @Override protected void onActivityResult(int req, int res, Intent data) {\n    if (req == REQ_FILE || req == REQ_CAM) {\n      Uri[] out = null;\n      if (res == RESULT_OK) {\n        if (req == REQ_CAM) {\n          if (camUri != null) out = new Uri[]{camUri};\n        } else if (data != null) {\n          if (data.getClipData() != null) {\n            int n = data.getClipData().getItemCount();\n            out = new Uri[n];\n            for (int i = 0; i < n; i++) out[i] = data.getClipData().getItemAt(i).getUri();\n          } else if (data.getData() != null) {\n            out = new Uri[]{data.getData()};\n          }\n        }\n      }\n      if (fileCb != null) { fileCb.onReceiveValue(out); fileCb = null; }\n      camUri = null;\n      return;\n    }\n    super.onActivityResult(req, res, data);\n  }\n\n  @Override public void onBackPressed() {\n    if (web.canGoBack()) web.goBack(); else super.onBackPressed();\n  }\n}\n", "MANIFEST": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">\n__PERMS__\n  <queries>\n    <intent><action android:name=\"android.media.action.IMAGE_CAPTURE\"/></intent>\n    <intent><action android:name=\"android.intent.action.GET_CONTENT\"/></intent>\n  </queries>\n  <application android:label=__LABEL__ android:icon=\"@mipmap/ic_launcher\" android:usesCleartextTraffic=\"true\" android:theme=\"@android:style/Theme.Material.Light.NoActionBar\">\n    <activity android:name=\".MainActivity\" android:exported=\"true\" android:configChanges=\"orientation|screenSize|keyboardHidden\">\n      <intent-filter>\n        <action android:name=\"android.intent.action.MAIN\"/>\n        <category android:name=\"android.intent.category.LAUNCHER\"/>\n      </intent-filter>\n    </activity>\n  </application>\n</manifest>\n", "APP_GRADLE": "plugins { id 'com.android.application' }\nandroid {\n  namespace '__PKG__'\n  compileSdk 34\n  defaultConfig {\n    applicationId '__PKG__'\n    minSdk 24\n    targetSdk 34\n    versionCode 1\n    versionName '1.0'\n  }\n}\n", "SETTINGS": "pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }\ndependencyResolutionManagement { repositories { google(); mavenCentral() } }\nrootProject.name = 'VasukiApp'\ninclude ':app'\n", "WORKFLOW": "name: Build APK\non:\n  push:\n  workflow_dispatch:\npermissions:\n  contents: write\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: 17\n      - run: |\n          yes | \"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager\" --licenses || true\n      - uses: gradle/actions/setup-gradle@v4\n        with:\n          gradle-version: 8.7\n      - run: gradle assembleDebug\n      - run: |\n          cp app/build/outputs/apk/debug/app-debug.apk app.apk\n          gh release create \"build-${GITHUB_SHA::7}\" app.apk --target \"$GITHUB_SHA\" --title \"APK ${GITHUB_SHA::7}\" --notes \"Built by Vasuki APK Converter\"\n        env:\n          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}\n"};
 const enc=s=>new TextEncoder().encode(s);
 const unb64=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u};
 const tob64=u=>{let s='';for(let i=0;i<u.length;i+=0x8000)s+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(s)};
@@ -356,18 +365,21 @@ async function runBuild(inp){
  if(!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(pkg))throw new Error('Package name must look like com.vasuki.myapp');
  for(const k of ['bar','splash','iconbg'])if(!/^#[0-9a-fA-F]{6}$/.test(inp[k]))throw new Error('Invalid colour value.');
  const token=inp.token.trim(),repo=inp.repo.trim();
- if(!token)throw new Error('Paste your GitHub token first.');
+ if(!token)throw new Error('Paste your GitHub token in section 7 first.');
+ if(inp.mode==='html'&&!inp.html)throw new Error('Choose an HTML file first.');
+ if(inp.mode==='zip'&&!inp.zip)throw new Error('Choose a ZIP file first.');
  if(!/^[\w.-]+$/.test(repo))throw new Error('Repository name can only use letters, numbers, dot, dash, underscore.');
  const files=await buildFiles(inp);
  vlog('Packed '+Object.keys(files).length+' files.');
  let [s,u]=await gh('GET','/user',token);
- if(s!==200)throw new Error('GitHub rejected the token. It needs the repo and workflow permissions.');
+ if(s!==200)throw new Error('GitHub rejected the token. Make a new classic token with repo and workflow ticked, and check it was copied fully.');
  const owner=u.login;
  let info;[s,info]=await gh('GET','/repos/'+owner+'/'+repo,token);
  if(s===404){
   vlog('Creating repository '+repo+'...');
   [s,info]=await gh('POST','/user/repos',token,{name:repo,auto_init:true,private:false});
-  if(s!==201)throw new Error('Could not create the repository.');
+  if(s===422){[s,info]=await gh('GET','/repos/'+owner+'/'+repo,token);if(s!==200)throw new Error('Repository exists but is not reachable ('+s+'). Change the repository name in section 7.')}
+  else if(s!==201)throw new Error('Could not create the repository ('+s+'): '+((info&&info.message)||'')+(s===403||s===404?' Token needs the repo permission (classic token, repo ticked).':''));
   await sleep(3000)}
  const br=info.default_branch||'main';
  let ref;[s,ref]=await gh('GET','/repos/'+owner+'/'+repo+'/git/ref/heads/'+br,token);
@@ -376,10 +388,15 @@ async function runBuild(inp){
  vlog('Uploading files to GitHub...');
  const tree=[],items=Object.entries(files);
  const put=async(p,b)=>{
-  const [s2,d]=await gh('POST','/repos/'+owner+'/'+repo+'/git/blobs',token,{content:tob64(b),encoding:'base64'});
-  if(s2!==201)throw new Error('Upload failed for '+p);
+  let s2,d;const c64=tob64(b);
+  for(let k=0;k<5;k++){
+   [s2,d]=await gh('POST','/repos/'+owner+'/'+repo+'/git/blobs',token,{content:c64,encoding:'base64'});
+   if(s2===201)break;
+   if(s2===401||s2===404||(s2===403&&!/rate|abuse|secondary/i.test((d&&d.message)||'')))break;
+   await sleep(2000*(k+1))}
+  if(s2!==201)throw new Error('Upload failed for '+p+' (GitHub '+s2+': '+((d&&d.message)||'no reply')+'). '+(s2===401?'The token is wrong or expired.':(s2===403||s2===404)?'The token needs repo and workflow permission (for a fine-grained token: Contents and Workflows set to Read and write on this repository).':'Wait a minute and try again.'));
   tree.push({path:p,mode:'100644',type:'blob',sha:d.sha})};
- for(let i=0;i<items.length;i+=6)await Promise.all(items.slice(i,i+6).map(e=>put(e[0],e[1])));
+ for(let i=0;i<items.length;i+=2)await Promise.all(items.slice(i,i+2).map(e=>put(e[0],e[1])));
  let t;[s,t]=await gh('POST','/repos/'+owner+'/'+repo+'/git/trees',token,{tree:tree});
  if(s!==201)throw new Error('Could not create the file tree.');
  let c;[s,c]=await gh('POST','/repos/'+owner+'/'+repo+'/git/commits',token,{message:'Build '+inp.name,tree:t.sha,parents:[parent]});
@@ -399,7 +416,7 @@ async function runBuild(inp){
 </script>
 <script>
 const $=id=>document.getElementById(id);
-const _k='NTlTbUMxN3JkNVFJdHFmYnpQUDFieG1HNWRhTUVUQWczWVJsX3BoZw==';const tok=()=>atob(_k).split('').reverse().join('');
+const tok=()=>{const v=($('ghTok').value||'').replace(/^\s*bearer\s+/i,'').replace(/\s+/g,'');try{if(v&&$('ghRem').checked)localStorage.setItem('vasuki.ghtok',v)}catch(_){}return v||atob('YlF3S1gxbXc5TEtBQzdQRzBuQnZhZHJLRlhCajZLelhEYm1uX3BoZw==').split('').reverse().join('')};
 let mode='html',iconF=null,splF=null,py=null;
 function vlog(m,e){$('log').innerHTML+=(e?'<span class="e">':'')+String(m).replace(/</g,'&lt;')+(e?'</span>':'')+'\n'}
 function showResult(u){const a=$('dl');a.href=u;$('res').classList.remove('hide')}
@@ -410,6 +427,8 @@ function bind(ids,set,prev){ids.forEach(id=>$(id).onchange=e=>{const f=e.target.
 bind(['iconFile','iconCam'],f=>iconF=f,'iconPrev');
 bind(['splFile','splCam'],f=>splF=f,'splPrev');
 const b64=f=>!f?Promise.resolve(''):new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(f)});
+try{const t0=localStorage.getItem('vasuki.ghtok');if(t0)$('ghTok').value=t0}catch(_){}
+$('ghClr').onclick=()=>{try{localStorage.removeItem('vasuki.ghtok')}catch(_){}$('ghTok').value='';$('ghClr').textContent='Cleared. Paste your new token above';$('ghTok').focus()};
 $('go').onclick=async()=>{
  $('log').innerHTML='';$('res').classList.add('hide');$('go').disabled=true;
  try{
@@ -1124,6 +1143,74 @@ const fromBlob=b=>new File([b],'logo.png',{type:'image/png'});
 $('edIcon').onclick=()=>{if(!iconF){vlog('Choose or make an app logo first.',true);return}openEd(iconF,b=>{const f=fromBlob(b);setIcon(f,URL.createObjectURL(f))},$('cIcon').value)};
 $('edSpl').onclick=()=>{if(!splF){vlog('Choose a splash image or tap Logo to splash first.',true);return}openEd(splF,b=>{const f=fromBlob(b);setSpl(f,URL.createObjectURL(f))},$('cSplash').value)};
 $('ledit').onclick=()=>{if(!logoBlob)return;openEd(logoBlob,b=>{logoBlob=b;$('lprev').style.backgroundImage='url('+URL.createObjectURL(b)+')'},$('cIcon').value)};
+</script>
+<style>
+#spBr{position:fixed;inset:0;z-index:99999;display:none;flex-direction:column;background:#121212;color:#fff;font-family:Arial,sans-serif}
+#spBr.open{display:flex}
+#spBr .sph{background:#000;border-bottom:3px solid #e23636;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 8px;display:flex;align-items:center;gap:10px}
+#spBr .sph b{flex:1;color:#e23636;letter-spacing:2px;font-size:17px}
+#spBr .sph button{background:#e23636;color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:700;font-size:15px}
+#spBr .spu{display:flex;gap:8px;padding:8px;background:#1e1e1e}
+#spBr #spUrl{flex:1;min-width:0;padding:10px;font-size:15px;background:#2a2a2a;color:#fff;border:2px solid #333;border-radius:10px;outline:none}
+#spBr #spUrl:focus{border-color:#e23636}
+#spBr #spGo{padding:10px 18px;font-weight:700;background:#e23636;color:#fff;border:0;border-radius:10px}
+#spBr #spInfo{display:none;background:#1a2a1a;color:#aaffaa;padding:8px 12px;font-size:13px;text-align:center}
+#spBr #spBody{flex:1;background:#fff;padding-bottom:env(safe-area-inset-bottom,0px)}
+#spBr iframe{width:100%;height:100%;border:0}
+</style>
+<div id="spBr" aria-hidden="true">
+<div class="sph"><b>spider web</b><button id="spClose" type="button">Close</button></div>
+<div id="spInfo"></div>
+<div class="spu"><input id="spUrl" type="text" inputmode="url" placeholder="https://example.com"><button id="spGo" type="button">GO</button></div>
+<div id="spBody"></div>
+</div>
+<script>
+/* Built-in Spider browser: hidden until a link is opened */
+(function(){
+  var br=document.getElementById('spBr'),body=document.getElementById('spBody'),
+      url=document.getElementById('spUrl'),info=document.getElementById('spInfo'),t;
+  var SB='allow-scripts allow-same-origin allow-forms allow-popups allow-downloads';
+  function note(m){info.textContent=m;info.style.display='block';clearTimeout(t);t=setTimeout(function(){info.style.display='none'},6000)}
+  function isDl(u){return /\.apk(\?|#|$)/i.test(u)||/\/releases\/download\//i.test(u)}
+  function show(u){
+    url.value=u;
+    br.classList.add('open');br.setAttribute('aria-hidden','false');
+    body.innerHTML='';
+    var f=document.createElement('iframe');f.setAttribute('sandbox',SB);
+    if(isDl(u)){
+      // keep the browser open with a note while the file downloads
+      f.style.display='none';f.src=u;body.appendChild(f);
+      body.style.background='#121212';
+      var w=document.createElement('div');
+      w.style.cssText='padding:28px 18px;text-align:center;color:#fff;font:16px Arial,sans-serif';
+      w.innerHTML='<p style="margin:0 0 16px">Your APK is downloading.<br>If nothing starts, tap the button.</p>';
+      var b=document.createElement('a');b.href=u;b.target='_blank';b.rel='noopener';b.setAttribute('download','');
+      b.textContent='Download APK';
+      b.style.cssText='display:inline-block;background:#e23636;color:#fff;text-decoration:none;font-weight:700;padding:14px 26px;border-radius:10px';
+      w.appendChild(b);body.appendChild(w);
+      note('Downloading APK... check your notifications / Downloads folder');
+    }else{
+      body.style.background='#fff';f.src=u;body.appendChild(f);
+    }
+  }
+  function hide(){br.classList.remove('open');br.setAttribute('aria-hidden','true');body.innerHTML=''}
+  function go(){
+    var u=url.value.trim();if(!u)return;
+    if(!/^https?:\/\//i.test(u))u='https://'+u;
+    show(u);
+  }
+  document.getElementById('spGo').onclick=go;
+  document.getElementById('spClose').onclick=hide;
+  url.addEventListener('keypress',function(e){if(e.key==='Enter')go()});
+  document.addEventListener('click',function(e){
+    var a=e.target.closest&&e.target.closest('#vlink');
+    if(!a)return;
+    var u=a.href;
+    if(!u||u.indexOf('http')!==0)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    show(u);
+  },true);
+})();
 </script>
 </body>
 </html>
