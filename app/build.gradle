@@ -14,7 +14,7 @@ android {
     applicationId 'com.vasuki.myapp'
     minSdk 24
     targetSdk 34
-    versionCode 1795572834
+    versionCode 1795572904
     versionName '1.0'
   }
 }

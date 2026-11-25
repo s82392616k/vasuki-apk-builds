@@ -32,9 +32,9 @@ public class MainActivity extends Activity {
   private static final int REQ_FILE = 1001;
   private static final int REQ_CAM = 1002;
   private static final int REQ_PERM = 1003;
-  private static final boolean CAM = true;
+  private static final boolean CAM = false;
   private static final boolean MIC = false;
-  private static final boolean FILES = true;
+  private static final boolean FILES = false;
   private static final boolean LOC = false;
   private static final boolean NOTIF = false;
 
