@@ -1,753 +1,548 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
-<title>ROCKET MODE</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-  html,body{width:100%;height:100%;overflow:hidden;background:#05070f;
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    touch-action:none;overscroll-behavior:none;user-select:none;}
-  #stage{position:fixed;inset:0;touch-action:none;}
-  canvas{display:block;width:100%;height:100%;touch-action:none;}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>VASUKI DATA MANAGER</title>
+  <style>
+    :root{
+      --bg:#0b1729;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.08);
+      --text:#eaf2ff;
+      --muted: rgba(234,242,255,.75);
+      --accent:#4aa3ff;
+      --accent2:#27d07e;
+      --warn:#ffb74a;
+      --danger:#ff5f6d;
+      --shadow: 0 14px 35px rgba(0,0,0,.35);
+      --radius: 16px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background:
+        radial-gradient(900px 380px at 50% -80px, rgba(74,163,255,.35), transparent 60%),
+        radial-gradient(650px 300px at 10% 0%, rgba(39,208,126,.20), transparent 55%),
+        linear-gradient(180deg, #071021 0%, #09172a 40%, #071021 100%);
+      color:var(--text);
+      min-height:100dvh;
+      padding: 14px 14px 28px;
+      display:flex;
+      justify-content:center;
+    }
+    .app{
+      width: 100%;
+      max-width: 720px;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+    .header{
+      background: linear-gradient(180deg, rgba(74,163,255,.18), rgba(74,163,255,.05));
+      border: 1px solid rgba(74,163,255,.25);
+      border-radius: var(--radius);
+      padding: 14px 14px;
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 10px;
+      z-index: 2;
+      backdrop-filter: blur(10px);
+    }
+    .title{
+      margin:0;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing:.2px;
+      font-weight: 800;
+      color: rgba(200,235,255,.95);
+      text-align:center;
+    }
+    .status{
+      margin-top: 8px;
+      font-size: 12.5px;
+      text-align:center;
+      color: rgba(140,255,195,.95);
+      font-weight: 650;
+      letter-spacing:.4px;
+    }
+    .panel{
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .scroll{
+      max-height: calc(100dvh - 170px);
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .body{
+      padding: 12px 12px;
+      display:flex;
+      flex-direction:column;
+      gap: 9px;
+    }
+    .label{
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+      line-height:1.25;
+      word-break: break-word;
+    }
+    .label.big{
+      font-weight: 850;
+      font-size: 17px;
+      letter-spacing:.2px;
+      background: rgba(74,163,255,.09);
+      border-color: rgba(74,163,255,.18);
+    }
+    .label.mid{
+      font-weight: 750;
+      font-size: 15px;
+      background: rgba(255,255,255,.05);
+    }
+    .label.small{
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .label.accent{
+      border-color: rgba(74,163,255,.28);
+      background: rgba(74,163,255,.10);
+    }
+    .label.warn{
+      border-color: rgba(255,183,74,.28);
+      background: rgba(255,183,74,.10);
+      color: rgba(255,235,200,.95);
+    }
+    .label.success{
+      border-color: rgba(39,208,126,.28);
+      background: rgba(39,208,126,.10);
+      color: rgba(205,255,230,.98);
+    }
+    .btn{
+      width:100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 14px;
+      color: rgba(240,250,255,.96);
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing:.2px;
+      background: linear-gradient(180deg, rgba(74,163,255,.95), rgba(40,120,210,.95));
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+      cursor:pointer;
+      touch-action: manipulation;
+    }
+    .btn:active{ transform: translateY(1px); }
+    .btn.secondary{
+      background: linear-gradient(180deg, rgba(39,208,126,.95), rgba(25,150,90,.95));
+    }
+    .btn.ghost{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow:none;
+      color: rgba(225,240,255,.95);
+      font-weight: 800;
+    }
 
-  /* ---------- HUD ---------- */
-  .hud{position:absolute;inset:0;pointer-events:none;padding:14px 16px 30px;
-    display:flex;flex-direction:column;justify-content:space-between;color:#e8eefc;}
-  .row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
-  .stat{background:rgba(10,18,34,.62);border:1px solid rgba(120,170,255,.22);
-    border-radius:10px;padding:7px 11px;backdrop-filter:blur(6px);}
-  .stat .k{font-size:9px;letter-spacing:.18em;color:#7f93b8;}
-  .stat .v{font-size:17px;font-weight:700;color:#eaf2ff;line-height:1.15;}
-  .stat .v span{font-size:10px;color:#7f93b8;font-weight:500;margin-left:2px;}
-  .fuelwrap{width:100%;max-width:340px;}
-  .fuelrow{display:flex;justify-content:space-between;align-items:center;
-    font-size:9px;letter-spacing:.18em;color:#7f93b8;margin-bottom:5px;}
-  .bar{height:9px;border-radius:99px;background:rgba(255,255,255,.09);
-    border:1px solid rgba(120,170,255,.22);overflow:hidden;}
-  #fuelFill{height:100%;width:100%;border-radius:99px;
-    background:linear-gradient(90deg,#22d3a7,#6ee7ff);
-    transition:background .25s linear;}
-  #fuelFill.low{background:linear-gradient(90deg,#ff9d3d,#ffd166);}
-  #fuelFill.empty{background:linear-gradient(90deg,#ff3d6e,#ff7a5c);}
+    .hint{
+      font-size: 12.5px;
+      color: rgba(234,242,255,.68);
+      padding: 0 12px 10px;
+      text-align:center;
+    }
 
-  /* ---------- overlays ---------- */
-  .overlay{position:absolute;inset:0;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;gap:16px;text-align:center;
-    padding:26px;background:radial-gradient(ellipse at 50% 45%,
-      rgba(10,20,42,.78) 0%,rgba(4,6,14,.93) 70%);backdrop-filter:blur(3px);
-    z-index:5;animation:fade .35s ease both;}
-  @keyframes fade{from{opacity:0}to{opacity:1}}
-  .overlay.hidden{display:none;}
-  .title{font-size:clamp(34px,9vw,66px);font-weight:800;letter-spacing:.06em;
-    line-height:1;background:linear-gradient(180deg,#ffffff,#7cc7ff 55%,#3b7dd8);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    filter:drop-shadow(0 6px 26px rgba(80,160,255,.45));}
-  .sub{font-size:11px;letter-spacing:.34em;color:#7f93b8;margin-top:-6px;}
-  .keys{display:grid;gap:7px;font-size:11.5px;color:#a8bcdd;
-    background:rgba(12,22,40,.6);border:1px solid rgba(120,170,255,.18);
-    border-radius:12px;padding:13px 18px;text-align:left;}
-  .keys b{color:#6ee7ff;font-weight:700;}
-  .btn{pointer-events:auto;cursor:pointer;border:none;font-family:inherit;
-    font-size:13px;font-weight:800;letter-spacing:.16em;color:#04121f;
-    padding:14px 34px;border-radius:99px;
-    background:linear-gradient(180deg,#8ef0ff,#38bdf8);
-    box-shadow:0 10px 30px rgba(56,189,248,.35),inset 0 -3px 0 rgba(0,0,0,.18);
-    transition:transform .12s ease,box-shadow .12s ease;}
-  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 34px rgba(56,189,248,.5);}
-  .btn:active{transform:translateY(1px) scale(.985);}
-  .big{font-size:clamp(26px,7vw,42px);font-weight:800;letter-spacing:.05em;color:#ff6b81;
-    text-shadow:0 0 30px rgba(255,80,110,.45);}
-  .cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
-  .card{background:rgba(12,22,40,.72);border:1px solid rgba(120,170,255,.2);
-    border-radius:12px;padding:10px 18px;min-width:92px;}
-  .card .k{font-size:9px;letter-spacing:.18em;color:#7f93b8;}
-  .card .v{font-size:21px;font-weight:800;color:#eaf2ff;}
-  .stamp{position:absolute;bottom:6px;right:9px;font-size:9px;letter-spacing:.08em;
-    color:rgba(150,175,215,.4);pointer-events:none;z-index:6;}
-  .toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);
-    font-size:11px;letter-spacing:.22em;color:#ffd166;opacity:0;z-index:4;
-    pointer-events:none;text-shadow:0 0 18px rgba(255,209,102,.6);}
-  @media (max-width:420px){ .stat .v{font-size:15px} .keys{font-size:10.5px} }
-</style>
+    .row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 2px;
+    }
+    .chip{
+      flex: 1 1 160px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 10px 12px;
+    }
+    .chip .k{
+      font-size: 12px;
+      color: rgba(234,242,255,.70);
+      font-weight: 750;
+      letter-spacing:.3px;
+    }
+    .chip .v{
+      margin-top: 6px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      padding: 12px 12px 0;
+    }
+    .spacer{ flex:1; }
+    .smallBtn{
+      border:none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(230,243,255,.95);
+      font-weight: 800;
+      cursor:pointer;
+    }
+    .smallBtn:active{ transform: translateY(1px); }
+    .divider{
+      height:1px;
+      background: rgba(255,255,255,.08);
+      margin: 4px 0;
+    }
+  </style>
 </head>
 <body>
-<div id="stage">
-  <canvas id="c"></canvas>
-
-  <div class="hud">
-    <div class="row">
-      <div class="stat"><div class="k">ALTITUDE</div><div class="v"><span id="alt">0</span><span>m</span></div></div>
-      <div class="stat" style="text-align:right"><div class="k">SCORE</div><div class="v"><span id="score">0</span></div></div>
-      <div class="stat" style="text-align:right"><div class="k">BEST</div><div class="v"><span id="best">0</span></div></div>
+  <div class="app">
+    <div class="header">
+      <h1 class="title">VASUKI DATA MANAGER</h1>
+      <div class="status">OFFLINE MODE | LOCAL DATABASE</div>
     </div>
-    <div class="fuelwrap">
-      <div class="fuelrow"><span>FUEL</span><span id="fuelPct">100%</span></div>
-      <div class="bar"><div id="fuelFill"></div></div>
+
+    <div class="panel">
+      <div class="top-actions">
+        <button class="smallBtn" id="btnSeed">Seed Sample Verified Data</button>
+        <div class="spacer"></div>
+        <button class="smallBtn" id="btnClearDB" title="Clears local usage table">Reset Local DB</button>
+      </div>
+      <div class="hint">Works fully offline in your browser. Data is stored in your device (localStorage).</div>
+      <div class="scroll">
+        <div class="body" id="body"></div>
+      </div>
     </div>
   </div>
 
-  <div class="toast" id="toast">+25 FUEL</div>
+  <script>
+    /***********************
+     * "SQLite-like" local DB (browser offline)
+     ***********************/
+    const DB_KEY = "vasuki_data_manager_usage_v1";
 
-  <div class="overlay" id="start">
-    <div class="title">ROCKET MODE</div>
-    <div class="sub">ASCENT PROTOCOL</div>
-    <div class="keys">
-      <div><b>HOLD SPACE</b> &nbsp;thrust / climb</div>
-      <div><b>&larr; &rarr;</b> or <b>A D</b> &nbsp;steer sideways</div>
-      <div><b>DRAG / HOLD</b> &nbsp;on touch screens</div>
-      <div style="color:#7f93b8">Dodge asteroids &middot; grab blue cells for fuel</div>
-    </div>
-    <button class="btn" id="launchBtn">LAUNCH</button>
-  </div>
-
-  <div class="overlay hidden" id="over">
-    <div class="big" id="overTitle">MISSION FAILED</div>
-    <div class="cards">
-      <div class="card"><div class="k">ALTITUDE</div><div class="v"><span id="oAlt">0</span>m</div></div>
-      <div class="card"><div class="k">SCORE</div><div class="v" id="oScore">0</div></div>
-      <div class="card"><div class="k">BEST</div><div class="v" id="oBest">0</div></div>
-    </div>
-    <button class="btn" id="againBtn">RELAUNCH</button>
-  </div>
-
-  <div class="stamp">ROCKET MODE v1.0 &middot; build 2026-11-25</div>
-</div>
-
-<script>
-(function(){
-  "use strict";
-
-  // ---------------- canvas ----------------
-  const canvas = document.getElementById('c');
-  const ctx = canvas.getContext('2d');
-  let W = 0, H = 0, DPR = 1;
-
-  function resize(){
-    DPR = Math.min(window.devicePixelRatio || 1, 2);
-    W = window.innerWidth; H = window.innerHeight;
-    canvas.width = Math.round(W * DPR);
-    canvas.height = Math.round(H * DPR);
-    canvas.style.width = W + 'px';
-    canvas.style.height = H + 'px';
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    if (state.rocket){
-      state.rocket.x = clamp(state.rocket.x, 24, W - 24);
-    }
-  }
-
-  // ---------------- tuning ----------------
-  const GRAV       = 620;    // px / s^2
-  const THRUST     = 1480;   // px / s^2 upward while burning
-  const MAX_UP     = 780;    // terminal climb speed
-  const MAX_DOWN   = 760;
-  const SIDE_ACC   = 1900;
-  const MAX_VX     = 470;
-  const PX_PER_M   = 12;     // world pixels per metre of altitude
-  const FUEL_IDLE  = 2.0;    // % per second
-  const FUEL_BURN  = 11.5;   // % per second while thrusting
-  const PAD_Y      = 0;      // world y of the launch pad surface
-
-  const clamp = (v,a,b) => v < a ? a : v > b ? b : v;
-  const rand  = (a,b) => a + Math.random() * (b - a);
-
-  // ---------------- state ----------------
-  const state = {
-    mode: 'ready',        // ready | playing | over
-    rocket: { x: 0, y: -18, vx: 0, vy: 0, r: 15 },
-    camY: 0,
-    asteroids: [],
-    orbs: [],
-    particles: [],
-    stars: [],
-    alt: 0, altMax: 0, orbScore: 0,
-    fuel: 100,
-    thrusting: false, left: false, right: false, pointerX: null,
-    spawnAst: 1.0, spawnOrb: 1.8,
-    shake: 0, time: 0, flash: 0
-  };
-
-  const BEST_KEY = 'rocketmode.best.v1';
-  let best = 0;
-  try { best = parseInt(localStorage.getItem(BEST_KEY) || '0', 10) || 0; } catch(e){ best = 0; }
-
-  const stars = [];
-  for (let i = 0; i < 170; i++){
-    stars.push({
-      fx: Math.random(),
-      fy: Math.random(),
-      p: 0.12 + Math.random() * 0.55,
-      s: Math.random() * 1.7 + 0.35,
-      a: 0.25 + Math.random() * 0.7,
-      tw: Math.random() * Math.PI * 2
-    });
-  }
-
-  // ---------------- DOM ----------------
-  const elAlt    = document.getElementById('alt');
-  const elScore  = document.getElementById('score');
-  const elBest   = document.getElementById('best');
-  const elFuel   = document.getElementById('fuelFill');
-  const elFuelPct= document.getElementById('fuelPct');
-  const startEl  = document.getElementById('start');
-  const overEl   = document.getElementById('over');
-  const oAlt     = document.getElementById('oAlt');
-  const oScore   = document.getElementById('oScore');
-  const oBest    = document.getElementById('oBest');
-  const toastEl  = document.getElementById('toast');
-
-  let toastT = 0;
-  function toast(msg){
-    toastEl.textContent = msg;
-    toastT = 0.9;
-  }
-
-  // ---------------- lifecycle ----------------
-  function reset(){
-    state.mode = 'playing';
-    state.rocket = { x: W / 2, y: -18, vx: 0, vy: -170, r: 15 };
-    state.camY = -H * 0.70;
-    state.asteroids.length = 0;
-    state.orbs.length = 0;
-    state.particles.length = 0;
-    state.alt = 0; state.altMax = 0; state.orbScore = 0;
-    state.fuel = 100;
-    state.spawnAst = 1.1; state.spawnOrb = 1.7;
-    state.shake = 0; state.time = 0; state.flash = 0;
-    state.thrusting = false; state.left = false; state.right = false; state.pointerX = null;
-    startEl.classList.add('hidden');
-    overEl.classList.add('hidden');
-  }
-
-  function gameOver(reason){
-    if (state.mode !== 'playing') return;
-    state.mode = 'over';
-    state.shake = 16;
-    state.flash = 1;
-    explode(state.rocket.x, state.rocket.y, 46);
-    const score = Math.floor(state.altMax) + state.orbScore;
-    if (score > best){
-      best = score;
-      try { localStorage.setItem(BEST_KEY, String(best)); } catch(e){}
-    }
-    oAlt.textContent   = Math.floor(state.altMax);
-    oScore.textContent = score;
-    oBest.textContent  = best;
-    document.getElementById('overTitle').textContent =
-      reason === 'ground' ? 'HARD LANDING' : 'MISSION FAILED';
-    setTimeout(() => overEl.classList.remove('hidden'), 620);
-  }
-
-  // ---------------- particles ----------------
-  function explode(x, y, n){
-    for (let i = 0; i < n; i++){
-      const a = Math.random() * Math.PI * 2;
-      const sp = rand(60, 460);
-      state.particles.push({
-        x, y,
-        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp,
-        life: rand(0.35, 1.05), max: 1,
-        size: rand(1.5, 5),
-        hue: rand(10, 50)
-      });
-    }
-  }
-
-  function exhaust(x, y){
-    state.particles.push({
-      x: x + rand(-4, 4), y: y + 14,
-      vx: rand(-40, 40), vy: rand(120, 320),
-      life: rand(0.18, 0.45), max: 0.45,
-      size: rand(2, 5.5), hue: rand(25, 55)
-    });
-  }
-
-  // ---------------- spawning ----------------
-  function difficulty(){
-    return Math.min(1, state.altMax / 1600);
-  }
-
-  function spawnAsteroid(){
-    const d = difficulty();
-    const r = rand(13, 15 + 22 * d);
-    const pts = [];
-    const n = 9;
-    for (let i = 0; i < n; i++){
-      const a = (i / n) * Math.PI * 2;
-      const rr = r * rand(0.74, 1.18);
-      pts.push([Math.cos(a) * rr, Math.sin(a) * rr]);
-    }
-    state.asteroids.push({
-      x: rand(r + 10, W - r - 10),
-      y: state.camY - r - 70,
-      vx: rand(-70, 70) * (0.4 + d),
-      vy: rand(120, 210) + 190 * d,
-      r, pts, rot: rand(0, 6.3), spin: rand(-1.6, 1.6)
-    });
-  }
-
-  function spawnOrb(){
-    state.orbs.push({
-      x: rand(28, W - 28),
-      y: state.camY - 70,
-      vy: 95 + 90 * difficulty(),
-      ph: Math.random() * 6.3
-    });
-  }
-
-  // ---------------- update ----------------
-  function update(dt){
-    state.time += dt;
-    const r = state.rocket;
-    const burning = state.thrusting && state.fuel > 0;
-
-    // vertical
-    if (burning){
-      r.vy -= THRUST * dt;
-      state.fuel = Math.max(0, state.fuel - FUEL_BURN * dt);
-      exhaust(r.x, r.y);
-      if (Math.random() < 0.6) exhaust(r.x, r.y);
-    } else {
-      state.fuel = Math.max(0, state.fuel - FUEL_IDLE * dt);
-    }
-    r.vy += GRAV * dt;
-    r.vy = clamp(r.vy, -MAX_UP, MAX_DOWN);
-
-    // horizontal
-    let ax = 0;
-    if (state.left)  ax -= SIDE_ACC;
-    if (state.right) ax += SIDE_ACC;
-    if (state.pointerX !== null && state.pointerX !== undefined){
-      const dx = state.pointerX - r.x;
-      ax += clamp(dx * 9, -SIDE_ACC, SIDE_ACC);
-    }
-    r.vx += ax * dt;
-    r.vx *= Math.exp(-2.6 * dt);
-    r.vx = clamp(r.vx, -MAX_VX, MAX_VX);
-
-    r.x += r.vx * dt;
-    r.y += r.vy * dt;
-
-    if (r.x < r.r){ r.x = r.r; r.vx = Math.abs(r.vx) * 0.35; }
-    if (r.x > W - r.r){ r.x = W - r.r; r.vx = -Math.abs(r.vx) * 0.35; }
-
-    // altitude + camera
-    state.alt = Math.max(0, (PAD_Y - 18 - r.y) / PX_PER_M);
-    if (state.alt > state.altMax) state.altMax = state.alt;
-
-    const targetCam = Math.min(-H * 0.70, r.y - H * 0.70);
-    state.camY += (targetCam - state.camY) * Math.min(1, dt * 7);
-
-    // ground / pad contact
-    if (r.y + r.r * 0.4 >= PAD_Y && r.vy > 0){
-      gameOver('ground');
-      return;
-    }
-
-    // spawning
-    const d = difficulty();
-    state.spawnAst -= dt;
-    if (state.spawnAst <= 0){
-      state.spawnAst = 0.92 - 0.42 * d + Math.random() * 0.55;
-      spawnAsteroid();
-    }
-    state.spawnOrb -= dt;
-    if (state.spawnOrb <= 0){
-      state.spawnOrb = rand(1.5, 2.6);
-      spawnOrb();
-    }
-
-    // asteroids
-    for (let i = state.asteroids.length - 1; i >= 0; i--){
-      const a = state.asteroids[i];
-      a.x += a.vx * dt;
-      a.y += a.vy * dt;
-      a.rot += a.spin * dt;
-      if (a.x < a.r){ a.x = a.r; a.vx = Math.abs(a.vx); }
-      if (a.x > W - a.r){ a.x = W - a.r; a.vx = -Math.abs(a.vx); }
-
-      const dx = a.x - r.x, dy = a.y - r.y;
-      const rr = a.r + r.r * 0.78;
-      if (dx * dx + dy * dy < rr * rr){
-        gameOver('asteroid');
-        return;
+    function connectDB(){
+      // In this web version, "connect" means load a JSON object.
+      // Schema: { usage: { [day]: { mobile: number, wifi: number, verified: 0|1 } } }
+      const raw = localStorage.getItem(DB_KEY);
+      if(!raw){
+        const state = { usage: {} };
+        localStorage.setItem(DB_KEY, JSON.stringify(state));
+        return state;
       }
-      if (a.y - state.camY > H + a.r + 90) state.asteroids.splice(i, 1);
+      try{
+        const parsed = JSON.parse(raw);
+        if(!parsed || typeof parsed !== "object" || !parsed.usage) parsed.usage = {};
+        localStorage.setItem(DB_KEY, JSON.stringify(parsed));
+        return parsed;
+      }catch(e){
+        const state = { usage: {} };
+        localStorage.setItem(DB_KEY, JSON.stringify(state));
+        return state;
+      }
+    }
+    function persistDB(state){
+      localStorage.setItem(DB_KEY, JSON.stringify(state));
     }
 
-    // orbs
-    for (let i = state.orbs.length - 1; i >= 0; i--){
-      const o = state.orbs[i];
-      o.y += o.vy * dt;
-      o.ph += dt * 4;
-      const dx = o.x - r.x, dy = o.y - r.y;
-      if (dx * dx + dy * dy < (r.r + 20) * (r.r + 20)){
-        state.fuel = Math.min(100, state.fuel + 26);
-        state.orbScore += 50;
-        toast('+26 FUEL  +50');
-        for (let k = 0; k < 16; k++){
-          const ang = Math.random() * Math.PI * 2;
-          state.particles.push({
-            x: o.x, y: o.y,
-            vx: Math.cos(ang) * rand(40, 190), vy: Math.sin(ang) * rand(40, 190),
-            life: rand(0.25, 0.6), max: 0.6, size: rand(1.5, 3.5), hue: 195
-          });
+    function get_usage(day){
+      const state = connectDB();
+      const row = state.usage[day];
+      if(row) return [row.mobile ?? 0, row.wifi ?? 0, row.verified ? 1 : 0];
+      return [0, 0, 0];
+    }
+
+    function save_usage(day, mobile, wifi){
+      const state = connectDB();
+      state.usage[day] = { mobile: Number(mobile) || 0, wifi: Number(wifi) || 0, verified: 1 };
+      persistDB(state);
+    }
+
+    function bytesToMB(value){
+      return Math.round((value / (1024 * 1024)) * 100) / 100;
+    }
+
+    /***********************
+     * UI helpers
+     ***********************/
+    const body = document.getElementById('body');
+
+    function clear(){
+      body.innerHTML = "";
+    }
+
+    function label(text, opts={}){
+      // opts: {size:'big'|'mid'|'small', colorClass, style}
+      const div = document.createElement('div');
+      div.className = "label";
+      const size = opts.size || "small";
+      div.classList.add(size);
+      if(opts.colorClass) div.classList.add(opts.colorClass);
+      if(opts.style){
+        Object.assign(div.style, opts.style);
+      }
+      div.innerHTML = escapeMarkup(text);
+      body.appendChild(div);
+      return div;
+    }
+
+    function escapeMarkup(s){
+      // supports minimal markup similar to [b]...[/b] and plain text/newlines
+      // NOTE: keep safe: convert to text then replace tags we create ourselves
+      const safe = String(s)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+      // handle [b] [/b]
+      return safe
+        .replaceAll(/\[b\](.*?)\[\/b\]/g, "<strong>$1</strong>")
+        .replaceAll(/\n/g, "<br/>");
+    }
+
+    function button(text, onClick, opts={}){
+      const btn = document.createElement('button');
+      btn.className = "btn";
+      if(opts.variant === "secondary") btn.classList.add("secondary");
+      if(opts.variant === "ghost") btn.classList.add("ghost");
+      btn.textContent = text;
+      btn.addEventListener('click', onClick);
+      body.appendChild(btn);
+      return btn;
+    }
+
+    function formatDay(d){
+      // d is Date
+      return d.toISOString().slice(0,10);
+    }
+
+    function todayDate(){
+      return new Date();
+    }
+
+    /***********************
+     * App screens (mirroring Python methods)
+     ***********************/
+    function dashboard(){
+      clear();
+      const today = formatDay(todayDate());
+      const [mobile, wifi, verified] = get_usage(today);
+
+      label("TODAY'S DATA USAGE", {size:"mid", colorClass:"accent", style:{fontSize:"17px"}});
+      if(verified){
+        const row = document.createElement('div');
+        row.className = "row";
+        const c1 = document.createElement('div'); c1.className="chip";
+        c1.innerHTML = `<div class="k">Mobile</div><div class="v">${mobile} MB</div>`;
+        const c2 = document.createElement('div'); c2.className="chip";
+        c2.innerHTML = `<div class="k">Wi-Fi</div><div class="v">${wifi} MB</div>`;
+        row.appendChild(c1); row.appendChild(c2);
+        body.appendChild(row);
+      }else{
+        label("Mobile: Not connected", {size:"small", style:{color:"rgba(255,220,170,.95)", fontWeight:"800"}});
+        label("Wi-Fi: Not connected", {size:"small", style:{color:"rgba(255,220,170,.95)", fontWeight:"800"}});
+        label(
+          "Real Android statistics are not available in this Browser-only version.",
+          {size:"small", colorClass:"warn"}
+        );
+      }
+
+      body.appendChild(document.createElement('div')).className = "divider";
+
+      label("REPORTS", {size:"mid", style:{fontSize:"15.5px"}});
+
+      button("Today's Report", today);
+      button("Yesterday's Report", yesterday);
+      button("Last 7 Days Report", week);
+      button("Data Usage History", history);
+      button("App Data Management", apps);
+      button("Data Saving Solutions", solutions);
+      button("Android Permission Guide", permissions);
+      button("About", about);
+    }
+
+    function today(){
+      clear();
+      const day = formatDay(todayDate());
+      const [mobile, wifi, verified] = get_usage(day);
+
+      label("TODAY'S REPORT", {size:"mid", colorClass:"accent"});
+      if(verified){
+        label(`Mobile: ${mobile} MB`, {size:"small"});
+        label(`Wi-Fi: ${wifi} MB`, {size:"small"});
+        label(`Total: ${mobile + wifi} MB`, {size:"small", colorClass:"success"});
+      }else{
+        label("No verified statistics available.", {size:"small"});
+        label("Today's actual usage is not connected.", {size:"small", colorClass:"warn"});
+      }
+      button("Back", dashboard, {variant:"ghost"});
+    }
+
+    function yesterday(){
+      clear();
+      const d = todayDate();
+      d.setDate(d.getDate()-1);
+      const day = formatDay(d);
+      const [mobile, wifi, verified] = get_usage(day);
+
+      label("YESTERDAY'S REPORT", {size:"mid", colorClass:"accent"});
+      label(day, {size:"small", style:{fontWeight:"900", color:"rgba(234,242,255,.9)"}});
+      if(verified){
+        label(`Mobile: ${mobile} MB`, {size:"small"});
+        label(`Wi-Fi: ${wifi} MB`, {size:"small"});
+      }else{
+        label("No saved verified report.", {size:"small", colorClass:"warn"});
+      }
+      button("Back", dashboard, {variant:"ghost"});
+    }
+
+    function week(){
+      clear();
+      label("7 DAY DATA REPORT", {size:"mid", colorClass:"accent"});
+      let mobile_total = 0, wifi_total = 0;
+
+      for(let i=0;i<7;i++){
+        const d = todayDate();
+        d.setDate(d.getDate()-i);
+        const day = formatDay(d);
+        const [mobile, wifi, verified] = get_usage(day);
+
+        if(verified){
+          mobile_total += mobile;
+          wifi_total += wifi;
+          label(`${day}\nMobile: ${mobile} MB | Wi-Fi: ${wifi} MB`, {size:"small"});
+        }else{
+          label(`${day}: No verified report`, {size:"small", colorClass:"warn"});
         }
-        state.orbs.splice(i, 1);
-        continue;
       }
-      if (o.y - state.camY > H + 70) state.orbs.splice(i, 1);
+
+      label(`Mobile total: ${Math.round(mobile_total*100)/100} MB`, {size:"small", colorClass:"success"});
+      label(`Wi-Fi total: ${Math.round(wifi_total*100)/100} MB`, {size:"small", colorClass:"success"});
+      button("Back", dashboard, {variant:"ghost"});
     }
 
-    if (state.fuel <= 0 && state.time > 1.2 && Math.random() < 0.02) {
-      // subtle reminder that fuel is gone
-    }
-  }
+    function history(){
+      clear();
+      label("SAVED HISTORY", {size:"mid", colorClass:"accent"});
 
-  function updateParticles(dt){
-    for (let i = state.particles.length - 1; i >= 0; i--){
-      const p = state.particles[i];
-      p.life -= dt;
-      if (p.life <= 0){ state.particles.splice(i, 1); continue; }
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += 260 * dt;
-      p.vx *= Math.exp(-1.5 * dt);
-    }
-  }
+      const state = connectDB();
+      const rows = Object.entries(state.usage)
+        .filter(([day,row]) => (row.verified ? 1 : 0) === 1)
+        .map(([day,row]) => [day, row.mobile ?? 0, row.wifi ?? 0])
+        .sort((a,b)=> (a[0] < b[0] ? 1 : -1)) // desc by day (ISO string sorts lexicographically)
+        .slice(0,30);
 
-  // ---------------- drawing ----------------
-  function drawSky(){
-    const g = ctx.createLinearGradient(0, 0, 0, H);
-    const altT = Math.min(1, state.altMax / 2600);
-    g.addColorStop(0,   `rgb(${6 + 4 * (1 - altT)},${8 + 10 * (1 - altT)},${20 + 26 * (1 - altT)})`);
-    g.addColorStop(0.55,'#070b18');
-    g.addColorStop(1,   '#04060e');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, W, H);
-
-    // nebula glow
-    const nx = W * 0.5, ny = H * 0.15;
-    const rg = ctx.createRadialGradient(nx, ny, 0, nx, ny, Math.max(W, H) * 0.75);
-    rg.addColorStop(0, 'rgba(40,90,190,0.16)');
-    rg.addColorStop(0.5, 'rgba(90,50,170,0.07)');
-    rg.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = rg;
-    ctx.fillRect(0, 0, W, H);
-  }
-
-  function drawStars(){
-    for (let i = 0; i < stars.length; i++){
-      const s = stars[i];
-      let sy = (s.fy * H - state.camY * s.p) % H;
-      if (sy < 0) sy += H;
-      const tw = 0.65 + 0.35 * Math.sin(state.time * 2.4 + s.tw);
-      ctx.globalAlpha = s.a * tw;
-      ctx.fillStyle = '#dceaff';
-      ctx.fillRect(s.fx * W, sy, s.s, s.s);
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  function drawGround(){
-    const gy = PAD_Y - state.camY;
-    if (gy > H + 10) return;
-    // ground slab
-    const g = ctx.createLinearGradient(0, gy, 0, H);
-    g.addColorStop(0, '#12203a');
-    g.addColorStop(1, '#060a14');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, gy, W, H - gy + 4);
-
-    // pad platform
-    const pw = Math.min(180, W * 0.55);
-    ctx.fillStyle = '#1d2f4d';
-    ctx.fillRect(W / 2 - pw / 2, gy - 8, pw, 10);
-    ctx.fillStyle = '#2c4670';
-    ctx.fillRect(W / 2 - pw / 2, gy - 8, pw, 3);
-
-    // glow strip
-    ctx.fillStyle = 'rgba(110,231,255,0.55)';
-    ctx.fillRect(W / 2 - pw / 2, gy - 8, pw, 1.6);
-
-    // hazard marks
-    ctx.fillStyle = 'rgba(255,209,102,0.16)';
-    for (let x = 0; x < W; x += 26) ctx.fillRect(x, gy, 13, 4);
-  }
-
-  function drawAsteroids(){
-    for (const a of state.asteroids){
-      const sy = a.y - state.camY;
-      if (sy < -80 || sy > H + 90) continue;
-      ctx.save();
-      ctx.translate(a.x, sy);
-      ctx.rotate(a.rot);
-
-      ctx.beginPath();
-      ctx.moveTo(a.pts[0][0], a.pts[0][1]);
-      for (let i = 1; i < a.pts.length; i++) ctx.lineTo(a.pts[i][0], a.pts[i][1]);
-      ctx.closePath();
-
-      const g = ctx.createRadialGradient(-a.r * 0.35, -a.r * 0.35, a.r * 0.1, 0, 0, a.r * 1.25);
-      g.addColorStop(0, '#6b7b93');
-      g.addColorStop(0.55, '#3c4759');
-      g.addColorStop(1, '#1d2534');
-      ctx.fillStyle = g;
-      ctx.fill();
-
-      ctx.strokeStyle = 'rgba(150,190,240,0.30)';
-      ctx.lineWidth = 1.2;
-      ctx.stroke();
-
-      // craters
-      ctx.fillStyle = 'rgba(10,14,22,0.45)';
-      ctx.beginPath(); ctx.arc(-a.r * 0.25, -a.r * 0.15, a.r * 0.22, 0, 7); ctx.fill();
-      ctx.beginPath(); ctx.arc(a.r * 0.3, a.r * 0.28, a.r * 0.15, 0, 7); ctx.fill();
-      ctx.restore();
-    }
-  }
-
-  function drawOrbs(){
-    for (const o of state.orbs){
-      const sy = o.y - state.camY;
-      if (sy < -60 || sy > H + 70) continue;
-      const pulse = 1 + Math.sin(o.ph) * 0.12;
-      const rad = 10 * pulse;
-
-      const g = ctx.createRadialGradient(o.x, sy, 0, o.x, sy, rad * 3.4);
-      g.addColorStop(0, 'rgba(110,231,255,0.55)');
-      g.addColorStop(1, 'rgba(110,231,255,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.arc(o.x, sy, rad * 3.4, 0, 7); ctx.fill();
-
-      ctx.fillStyle = '#0a1a2c';
-      ctx.strokeStyle = '#6ee7ff';
-      ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(o.x, sy, rad, 0, 7); ctx.fill(); ctx.stroke();
-
-      ctx.fillStyle = '#a5f3ff';
-      ctx.beginPath();
-      ctx.moveTo(o.x, sy - rad * 0.55);
-      ctx.lineTo(o.x + rad * 0.42, sy);
-      ctx.lineTo(o.x, sy + rad * 0.55);
-      ctx.lineTo(o.x - rad * 0.42, sy);
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
-
-  function drawParticles(){
-    for (const p of state.particles){
-      const sy = p.y - state.camY;
-      if (sy < -60 || sy > H + 60) continue;
-      const t = clamp(p.life / p.max, 0, 1);
-      ctx.globalAlpha = t;
-      ctx.fillStyle = 'hsl(' + p.hue + ',100%,' + (55 + 25 * t) + '%)';
-      ctx.beginPath();
-      ctx.arc(p.x, sy, p.size * t, 0, 7);
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  function drawRocket(r, burning){
-    const sy = r.y - state.camY;
-    const ang = clamp(r.vx / MAX_VX, -1, 1) * 0.34;
-    ctx.save();
-    ctx.translate(r.x, sy);
-    ctx.rotate(ang);
-
-    // engine glow
-    if (burning){
-      const f = 0.75 + Math.random() * 0.55;
-      const g = ctx.createLinearGradient(0, 14, 0, 14 + 40 * f);
-      g.addColorStop(0, 'rgba(255,255,215,0.95)');
-      g.addColorStop(0.35, 'rgba(255,175,60,0.8)');
-      g.addColorStop(1, 'rgba(255,70,20,0)');
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.moveTo(-7, 14);
-      ctx.quadraticCurveTo(0, 14 + 44 * f, 7, 14);
-      ctx.closePath();
-      ctx.fill();
+      if(!rows.length){
+        label("No verified records saved.", {size:"small", colorClass:"warn"});
+      }else{
+        for(const row of rows){
+          label(`${row[0]}\nMobile: ${row[1]} MB | Wi-Fi: ${row[2]} MB`, {size:"small"});
+        }
+      }
+      button("Back", dashboard, {variant:"ghost"});
     }
 
-    // fins
-    ctx.fillStyle = '#ff4d5e';
-    ctx.beginPath(); ctx.moveTo(-7, 2); ctx.lineTo(-16, 18); ctx.lineTo(-7, 15); ctx.closePath(); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(7, 2); ctx.lineTo(16, 18); ctx.lineTo(7, 15); ctx.closePath(); ctx.fill();
-
-    // body
-    const bg = ctx.createLinearGradient(-9, 0, 9, 0);
-    bg.addColorStop(0, '#b9c8e2');
-    bg.addColorStop(0.42, '#ffffff');
-    bg.addColorStop(1, '#94a7c4');
-    ctx.fillStyle = bg;
-    ctx.beginPath();
-    ctx.moveTo(0, -25);
-    ctx.quadraticCurveTo(9, -13, 9, 2);
-    ctx.quadraticCurveTo(9, 14, 6, 16);
-    ctx.lineTo(-6, 16);
-    ctx.quadraticCurveTo(-9, 14, -9, 2);
-    ctx.quadraticCurveTo(-9, -13, 0, -25);
-    ctx.closePath();
-    ctx.fill();
-
-    // nose tip
-    ctx.fillStyle = '#ff4d5e';
-    ctx.beginPath();
-    ctx.moveTo(0, -25);
-    ctx.quadraticCurveTo(5.5, -17, 5, -12);
-    ctx.lineTo(-5, -12);
-    ctx.quadraticCurveTo(-5.5, -17, 0, -25);
-    ctx.closePath();
-    ctx.fill();
-
-    // window
-    ctx.fillStyle = '#08111f';
-    ctx.beginPath(); ctx.arc(0, -5, 5.6, 0, 7); ctx.fill();
-    ctx.fillStyle = '#4fd1ff';
-    ctx.beginPath(); ctx.arc(0, -5, 4.1, 0, 7); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
-    ctx.beginPath(); ctx.arc(-1.4, -6.5, 1.5, 0, 7); ctx.fill();
-
-    ctx.restore();
-  }
-
-  function drawHUD(){
-    elAlt.textContent   = Math.floor(state.altMax);
-    elScore.textContent = Math.floor(state.altMax) + state.orbScore;
-    elBest.textContent  = Math.max(best, Math.floor(state.altMax) + state.orbScore);
-    const f = state.fuel;
-    elFuel.style.width = f + '%';
-    elFuelPct.textContent = Math.round(f) + '%';
-    elFuel.className = f <= 0 ? 'empty' : f < 30 ? 'low' : '';
-  }
-
-  function draw(){
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.clearRect(0, 0, W, H);
-
-    if (state.shake > 0.3){
-      const s = state.shake;
-      ctx.translate(rand(-s, s), rand(-s, s));
+    function apps(){
+      clear();
+      label("APP DATA MANAGEMENT", {size:"mid", colorClass:"accent"});
+      label("Per-app network statistics require Android system integration.", {size:"small", colorClass:"warn"});
+      label("To manage an app:");
+      label("1. Open Android Settings.");
+      label("2. Select Apps.");
+      label("3. Choose an application.");
+      label("4. Open Mobile data.");
+      label("5. Review background data usage.");
+      label("No invented app statistics are displayed.", {size:"small", colorClass:"success"});
+      button("Back", dashboard, {variant:"ghost"});
     }
 
-    drawSky();
-    drawStars();
-    drawGround();
-    drawOrbs();
-    drawAsteroids();
-    drawParticles();
-
-    if (state.mode !== 'over'){
-      drawRocket(state.rocket, state.thrusting && state.fuel > 0 && state.mode === 'playing');
+    function solutions(){
+      clear();
+      label("DATA SAVING SOLUTIONS", {size:"mid", colorClass:"accent"});
+      const tips = [
+        "1. Enable Android Data Saver.",
+        "2. Restrict background data for unnecessary apps.",
+        "3. Reduce streaming video quality.",
+        "4. Disable automatic media downloads.",
+        "5. Use Wi-Fi for large downloads.",
+        "6. Turn off automatic updates on mobile data.",
+        "7. Check hotspot usage."
+      ];
+      for(const t of tips) label(t, {size:"small"});
+      button("Back", dashboard, {variant:"ghost"});
     }
 
-    if (state.flash > 0){
-      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      ctx.fillStyle = 'rgba(255,180,120,' + (state.flash * 0.5) + ')';
-      ctx.fillRect(0, 0, W, H);
+    function permissions(){
+      clear();
+      label("ANDROID PERMISSION GUIDE", {size:"mid", colorClass:"accent"});
+      label("Usage Access can be enabled in Android Settings.");
+      label("Settings > Apps > Special app access > Usage data access");
+      label("This permission alone does not provide per-app network byte counts.");
+      label("Android NetworkStatsManager access requires a suitable Android integration.", {size:"small", colorClass:"warn"});
+      button("Back", dashboard, {variant:"ghost"});
     }
 
-    drawHUD();
-  }
-
-  // ---------------- loop ----------------
-  let last = performance.now();
-  function frame(now){
-    let dt = (now - last) / 1000;
-    last = now;
-    if (!isFinite(dt) || dt <= 0) dt = 1 / 60;
-    dt = Math.min(dt, 1 / 30);
-
-    if (state.mode === 'playing'){
-      update(dt);
-      updateParticles(dt);
-    } else if (state.mode === 'over'){
-      updateParticles(dt);
-      state.camY += 6 * dt; // slow drift
-    } else {
-      state.time += dt;
-      state.rocket.y = -18 + Math.sin(state.time * 1.6) * 2;
+    function about(){
+      clear();
+      label("VASUKI DATA MANAGER", {size:"mid", colorClass:"accent"});
+      label("Version 2.1", {size:"small"});
+      label("Developed by Vasuki", {size:"small"});
+      label("Python + Kivy + SQLite (Web Offline Port)", {size:"small"});
+      label("Offline-first application", {size:"small"});
+      label("No online reports or advertisements.", {size:"small"});
+      button("Back", dashboard, {variant:"ghost"});
     }
 
-    if (state.shake > 0) state.shake *= Math.exp(-4 * dt);
-    if (state.flash > 0) state.flash = Math.max(0, state.flash - dt * 2.2);
-    if (toastT > 0){
-      toastT -= dt;
-      toastEl.style.opacity = String(clamp(toastT / 0.45, 0, 1));
-    } else if (toastEl.style.opacity !== '0'){
-      toastEl.style.opacity = '0';
-    }
+    /***********************
+     * Demo controls (to mimic "verified" data)
+     ***********************/
+    document.getElementById('btnSeed').addEventListener('click', () => {
+      // Create some sample verified values for today and previous 6 days
+      // This mimics the Python app when verified stats exist.
+      const baseMobile = 120 + Math.random()*500;
+      const baseWifi = 50 + Math.random()*300;
 
-    draw();
-    requestAnimationFrame(frame);
-  }
+      for(let i=0;i<7;i++){
+        const d = todayDate();
+        d.setDate(d.getDate()-i);
+        const day = formatDay(d);
+        const mobile = Math.round((baseMobile*(1-(i*0.06))) * 100)/100;
+        const wifi = Math.round((baseWifi*(1-(i*0.04))) * 100)/100;
 
-  // ---------------- input ----------------
-  const KEY_LEFT  = ['ArrowLeft', 'a', 'A'];
-  const KEY_RIGHT = ['ArrowRight', 'd', 'D'];
-  const KEY_UP    = [' ', 'Spacebar', 'ArrowUp', 'w', 'W'];
+        // Make some days missing to replicate "No verified report"
+        const shouldVerify = Math.random() > 0.15 || i===0;
+        if(shouldVerify){
+          save_usage(day, mobile, wifi);
+        }else{
+          // ensure it's not verified (leave absent)
+          const state = connectDB();
+          delete state.usage[day];
+          persistDB(state);
+        }
+      }
+      dashboard();
+    });
 
-  window.addEventListener('keydown', function(e){
-    if (KEY_UP.indexOf(e.key) !== -1){
-      e.preventDefault();
-      if (state.mode === 'ready'){ reset(); return; }
-      if (state.mode === 'over'){ reset(); return; }
-      state.thrusting = true;
-    } else if (KEY_LEFT.indexOf(e.key) !== -1){
-      e.preventDefault(); state.left = true;
-    } else if (KEY_RIGHT.indexOf(e.key) !== -1){
-      e.preventDefault(); state.right = true;
-    } else if (e.key === 'r' || e.key === 'R'){
-      if (state.mode !== 'ready') reset();
-    }
-  }, { passive: false });
+    document.getElementById('btnClearDB').addEventListener('click', () => {
+      const ok = confirm("Reset local database? This will remove all saved verified records.");
+      if(!ok) return;
+      localStorage.removeItem(DB_KEY);
+      dashboard();
+    });
 
-  window.addEventListener('keyup', function(e){
-    if (KEY_UP.indexOf(e.key) !== -1) state.thrusting = false;
-    else if (KEY_LEFT.indexOf(e.key) !== -1) state.left = false;
-    else if (KEY_RIGHT.indexOf(e.key) !== -1) state.right = false;
-  });
-
-  function pointerDown(e){
-    if (state.mode !== 'playing') return;
-    state.thrusting = true;
-    state.pointerX = e.clientX;
-  }
-  function pointerMove(e){
-    if (state.pointerX !== null) state.pointerX = e.clientX;
-  }
-  function pointerUp(){
-    state.thrusting = false;
-    state.pointerX = null;
-  }
-
-  canvas.addEventListener('pointerdown', pointerDown);
-  window.addEventListener('pointermove', pointerMove);
-  window.addEventListener('pointerup', pointerUp);
-  window.addEventListener('pointercancel', pointerUp);
-
-  document.getElementById('launchBtn').addEventListener('click', function(e){
-    e.stopPropagation(); reset();
-  });
-  document.getElementById('againBtn').addEventListener('click', function(e){
-    e.stopPropagation(); reset();
-  });
-
-  window.addEventListener('blur', function(){
-    state.thrusting = false; state.left = false; state.right = false; state.pointerX = null;
-  });
-
-  // ---------------- boot ----------------
-  window.addEventListener('resize', resize);
-  resize();
-  state.rocket.x = W / 2;
-  state.camY = -H * 0.70;
-  requestAnimationFrame(frame);
-})();
-</script>
+    // Initial screen
+    dashboard();
+  </script>
 </body>
 </html>

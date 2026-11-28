@@ -1,6 +1,6 @@
 plugins { id 'com.android.application' }
 android {
-  namespace 'com.vasuki.research'
+  namespace 'com.vasuki.myapp'
   compileSdk 34
   signingConfigs {
     debug {
@@ -11,10 +11,10 @@ android {
     }
   }
   defaultConfig {
-    applicationId 'com.vasuki.research'
+    applicationId 'com.vasuki.myapp'
     minSdk 24
     targetSdk 34
-    versionCode 1795575127
+    versionCode 1795879708
     versionName '1.0'
   }
 }
